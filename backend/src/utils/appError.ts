@@ -46,7 +46,7 @@ export class InternalServerException extends AppError {
 
 export class NotFoundException extends AppError {
   constructor(
-    message: "Resource Not Found",
+    message: string,
     errorCode?: ErrorCodeEnumType
   ){
     super(

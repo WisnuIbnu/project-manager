@@ -70,6 +70,6 @@ userSchema.methods.comparePassword = async function(value: string) {
   return compareValue(value, this.password);
 }
 
-const userModel = mongoose.model<UserDocument>("User", userSchema);
-export default userModel;
+const UserModel = mongoose.model<UserDocument>("User", userSchema);
+export default UserModel;
 
