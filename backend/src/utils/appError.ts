@@ -58,7 +58,7 @@ export class NotFoundException extends AppError {
 }
 export class BadRequestException extends AppError {
   constructor(
-    message: "Bad Request",
+    message: string,
     errorCode?: ErrorCodeEnumType
   ){
     super(

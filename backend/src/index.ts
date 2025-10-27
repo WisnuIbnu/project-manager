@@ -2,13 +2,16 @@ import "dotenv/config";
 import express, { NextFunction, Request, Response} from "express";
 import cors from "cors";
 import session from "cookie-session";
-import { config } from "../config/app.config";
-import connectDatabase from "../config/database.config";
-import errorHandler from "../middlewares/errorHandle.middleware";
-import { HTTPSTATUS } from "../config/http.config";
-import { asyncHandler } from "../middlewares/asyncHandler.middleware";
-import { BadRequestException } from "../utils/appError";
-import { ErrorCodeEnum } from "../enums/error-code.enum";
+import { config } from "./config/app.config";
+import connectDatabase from "./config/database.config";
+import errorHandler from "./middlewares/errorHandle.middleware";
+import { HTTPSTATUS } from "./config/http.config";
+import { asyncHandler } from "./middlewares/asyncHandler.middleware";
+import { BadRequestException } from "./utils/appError";
+import { ErrorCodeEnum } from "./enums/error-code.enum";
+import passport from "passport";
+import authRoutes from "./routes/auth.route";
+import "./config/passport.config";
 
 const app = express();
 const BASE_PATH = config.BASE_PATH;
@@ -35,12 +38,17 @@ app.use(
   })
 );
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.get('/', asyncHandler( async(req: Request, res: Response, next: NextFunction)  => {
-    throw new BadRequestException("Bad Request", ErrorCodeEnum.AUTH_INVALID_TOKEN);
+    // throw new BadRequestException("Bad Request", ErrorCodeEnum.AUTH_INVALID_TOKEN);
     res.status(HTTPSTATUS.OK).json({
     message: "Validation Service is running",
   });
 }));
+
+app.use(`${BASE_PATH}/auth`, authRoutes);
 
 app.use(errorHandler);
 

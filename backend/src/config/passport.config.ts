@@ -11,7 +11,7 @@ passport.use(
     {
       clientID: config.GOOGLE_CLIENT_ID,
       clientSecret: config.GOOGLE_CLIENT_SECRET,
-      callbackURL: config.FRONTEND_GOOGLE_CALLBACK_URL,
+      callbackURL: config.GOOGLE_CALLBACK_URL,
       scope: ["profile", "email"],
       passReqToCallback: true,
     }, 
@@ -38,3 +38,6 @@ passport.use(
     }
   }
 ));
+
+passport.serializeUser((user: any, done) => done(null, user));
+passport.deserializeUser((user: any, done) => done(null, user));
