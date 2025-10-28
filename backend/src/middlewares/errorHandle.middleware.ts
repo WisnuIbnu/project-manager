@@ -1,28 +1,46 @@
-import { ErrorRequestHandler } from "express";
+import { ErrorRequestHandler, Response } from "express";
 import { HTTPSTATUS } from "../config/http.config";
 import { AppError } from "../utils/appError";
+import { z, ZodError } from "zod";
+import { ErrorCodeEnum } from "../enums/error-code.enum";
 
-export const errorHandler:ErrorRequestHandler = (err, req, res, next): any => {
+const formatZodError = (res: Response, err: z.ZodError) =>{
+  const errors = err?.issues?.map((err) => ({
+    field: err.path.join("."),
+    message: err.message,
+  }));
+    return res.status(HTTPSTATUS.BAD_REQUEST).json({
+      message: "Validation Failed",
+      errors: errors,
+      errorCode: ErrorCodeEnum.VALIDATION_ERROR,
+    })
+}
 
-  console.error(`Error Occured on PATH: ${req.path}`, err);
+export const errorHandler:ErrorRequestHandler = (error, req, res, next): any => {
 
-  if(err instanceof SyntaxError){
+  console.error(`Error Occured on PATH: ${req.path}`, error);
+
+  if(error instanceof SyntaxError){
     return res.status(HTTPSTATUS.BAD_REQUEST).json({
       message: "Invalid Json Syntax",
-      error: err.message,
+      error: error.message,
     })
   }
+
+  if(error instanceof ZodError){
+    return formatZodError(res, error);
+  }
   
-  if(err instanceof AppError){
-    return res.status(err.statusCode).json({
-      message: err.message,
-      errorCode: err.errorCode, 
+  if(error instanceof AppError){
+    return res.status(error.statusCode).json({
+      message: error.message,
+      errorCode: error.errorCode, 
     });
   }
   
   return res.status(HTTPSTATUS.INTERNAL_SERVER_ERROR).json({
     message: "Internal Server Error",
-    error: err?.message || "Unknown Error Occurred",
+    error: error?.message || "Unknown Error Occurred",
   })
 }
 

@@ -70,7 +70,7 @@ export class BadRequestException extends AppError {
 }
 export class UnauthorizedException extends AppError {
   constructor(
-    message: "Unauthorized",
+    message: string,
     errorCode?: ErrorCodeEnumType
   ){
     super(
