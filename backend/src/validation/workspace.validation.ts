@@ -7,10 +7,10 @@ export const descriptionSchema = z.string().trim().optional();
 
 export const createWorkspaceSchema = z.object({
   name: nameSchema,
-  descriptioin: descriptionSchema,
+  description: descriptionSchema,
 });
 
 export const updateWorkspaceSchema = z.object({
   name: nameSchema,
-    descriptioin: descriptionSchema,
+    description: descriptionSchema,
 });
