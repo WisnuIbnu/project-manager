@@ -181,3 +181,17 @@ export const updateWorkspaceByIdService = async(
     await workspace.save();
     return { workspace };
 };
+
+export const deletedWorkspaceByIdService = async(
+ workspaceId: string,
+) => {
+  const workspace = await WorkspaceModel.findById(workspaceId);
+
+    if (!workspace) {
+    throw new NotFoundException("Workspace Not Found!")
+  }
+
+  await  workspace.deleteOne();
+
+  return { workspace }
+};

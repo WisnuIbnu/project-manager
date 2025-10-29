@@ -14,7 +14,7 @@ export const roleGuard = (
 
 
   if (!hasPermission) {
-    throw new UnauthorizedException("You dont have the necesssary permissions to perform this workspace");
+    throw new UnauthorizedException("You dont have the necesssary permissions to perform this action");
   }
 };
 
