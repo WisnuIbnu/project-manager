@@ -83,3 +83,21 @@ export const getWorkspaceByIdService = async(
 
   return { workspace: workspaceWithMembers };
 }
+
+export const getWorkspaceMembersService = async(
+  workspaceId: string,
+) => {
+   const workspace = await WorkspaceModel.findById( workspaceId)
+
+    if (!workspace) {
+      throw new NotFoundException("Workspace not found");
+    }
+
+    const members = await MemberModel.find({
+      workspaceId
+    }).populate("userId", "name email profilePicture -password").populate("role", "name");
+
+    const roles = await RoleModel.find({}, {name: 1, _id:1}).select("-permission").lean();
+
+    return { members, roles };
+}
