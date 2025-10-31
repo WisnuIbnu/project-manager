@@ -4,9 +4,10 @@ import MemberModel from "../models/member.model";
 import RoleModel from "../models/roles-permission.model";
 import UserModel from "../models/user.model";
 import WorkspaceModel from "../models/workspace.model";
-import { NotFoundException } from "../utils/appError";
+import { BadRequestException, NotFoundException } from "../utils/appError";
 import TaskModel from "../models/task.model";
 import { TaskStatusEnum } from "../enums/task.enum";
+import ProjectModel from "../models/project.model";
 
 // create new workspace
 
@@ -184,14 +185,61 @@ export const updateWorkspaceByIdService = async(
 
 export const deletedWorkspaceByIdService = async(
  workspaceId: string,
+ userId: string
 ) => {
+  
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
   const workspace = await WorkspaceModel.findById(workspaceId);
 
     if (!workspace) {
     throw new NotFoundException("Workspace Not Found!")
+     }
+
+    if (workspace.owner.toString() !== userId) {
+      throw new BadRequestException(
+        "You are not authorized to deleted this workspace"
+      );
+    }
+
+    const user = await UserModel.findById(userId).session(session);
+    if (!user) {
+      throw new NotFoundException(
+        "User not found"
+      );
+    }
+
+    await ProjectModel.deleteMany({
+       workspace: workspace._id
+    }).session(session);
+
+    await MemberModel.deleteMany({
+      workspaceId: workspace._id
+    }).session(session);
+
+    // update the user currentWorkspace if it
+    if (user?.currentWorkspace?.equals(workspaceId)) {
+      const memberWorkspace = await MemberModel.findOne({
+        userId, 
+      }).session(session);
+
+      user.currentWorkspace = memberWorkspace ? memberWorkspace.workspaceId : null;
+
+      await user.save();
+    }
+
+    await workspace.deleteOne({ session });
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      currentWorkspace: user.currentWorkspace
+    }
+  } catch (error) {
+   await session.abortTransaction();
+   session.endSession();
+   throw error; 
   }
-
-  await  workspace.deleteOne();
-
-  return { workspace }
 };

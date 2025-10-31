@@ -131,10 +131,10 @@ export const deleteWorkspaceByIdController = asyncHandler(async(
     const { role } = await getMemberRoleInWorkspace(userId, workspaceId);
     roleGuard(role, [Permissions.DELETE_WORKSPACE]);
 
-    const { workspace } = await deletedWorkspaceByIdService(workspaceId);
+    const { currentWorkspace } = await deletedWorkspaceByIdService(workspaceId, userId);
 
     return res.status(HTTPSTATUS.OK).json({
       message: "Workspace deleted successfully",
-      workspace,
-    })
+      currentWorkspace,
+    });
 });
