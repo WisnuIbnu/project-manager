@@ -47,7 +47,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get('/', asyncHandler( async(req: Request, res: Response, next: NextFunction)  => {
-    // throw new BadRequestException("Bad Request", ErrorCodeEnum.AUTH_INVALID_TOKEN);
     res.status(HTTPSTATUS.OK).json({
     message: "Validation Service is running",
   });

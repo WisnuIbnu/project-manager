@@ -226,3 +226,42 @@ export const getProjectByIdAndWorkspaceService = async (
     project
   }
 };
+
+export const deleteProjectService = async(
+  workspaceId: string,
+  projectId: string,
+  
+) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const project = await ProjectModel.findOne({
+      _id: projectId,
+      workspace: workspaceId
+    }).session(session);
+
+    if (!project) {
+      throw new NotFoundException("Project not found or does not belong to the specified workspace");
+    }
+
+
+    await TaskModel.deleteMany({
+      project: projectId,
+      workspace: workspaceId
+    }).session(session);
+
+    await project.deleteOne({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      project
+    }
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};

@@ -211,6 +211,10 @@ export const deletedWorkspaceByIdService = async(
       );
     }
 
+    await TaskModel.deleteMany({
+    workspaceId: workspace._id
+    }).session(session);
+
     await ProjectModel.deleteMany({
        workspace: workspace._id
     }).session(session);
@@ -219,10 +223,11 @@ export const deletedWorkspaceByIdService = async(
       workspaceId: workspace._id
     }).session(session);
 
-    // update the user currentWorkspace if it
+     // Update user's currentWorkspace jika sedang menggunakan workspace yang dihapus
     if (user?.currentWorkspace?.equals(workspaceId)) {
       const memberWorkspace = await MemberModel.findOne({
-        userId, 
+        userId,
+        workspaceId: { $ne: workspaceId}
       }).session(session);
 
       user.currentWorkspace = memberWorkspace ? memberWorkspace.workspaceId : null;
