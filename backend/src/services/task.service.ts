@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { TaskPriorityEnum, TaskStatusEnum } from "../enums/task.enum";
 import MemberModel from "../models/member.model";
 import ProjectModel from "../models/project.model";
@@ -110,3 +111,50 @@ export const updateTaskService = async(
 
   return { updateTask }
 }
+
+export const deleteTaskService = async(
+  workspaceId: string,
+  projectId: string,
+  taskId: string
+) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const project = await ProjectModel.findOne({
+      _id: new mongoose.Types.ObjectId(projectId),
+      workspace: new mongoose.Types.ObjectId(workspaceId)
+    }).session(session);
+
+    if (!project) {
+      throw new NotFoundException("Project not found or does not belong to this workspace");
+    }
+
+    const task = await TaskModel.findOne({
+      _id: new mongoose.Types.ObjectId(taskId),
+      workspace: new mongoose.Types.ObjectId(workspaceId),
+      project: new mongoose.Types.ObjectId(projectId)
+    }).session(session);
+
+    if (!task) {
+      throw new NotFoundException("Task not found or does not belong to this project");
+    }
+
+    await task.deleteOne({ session });
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      deletedTask: {
+        _id: task._id,
+        taskCode: task.taskCode,
+        title: task.title
+      }
+    };
+
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
