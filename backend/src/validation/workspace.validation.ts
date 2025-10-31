@@ -7,6 +7,8 @@ export const descriptionSchema = z.string().trim().optional();
 
 export const workspaceIdSchema = z.string().trim().min(1, { message: "Workspace ID is Required"});
 
+export const projectIdSchema = z.string().min(1, "Project ID is required");
+
 export const changeRolesSchema = z.object({
   roleId: z.string().trim().min(1),
   memberId: z.string().trim().min(1)

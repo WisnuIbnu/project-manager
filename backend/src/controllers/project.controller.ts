@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../middlewares/asyncHandler.middleware";
 import { createProjectSchema, updateProjectSchema } from "../validation/project.validation";
-import { workspaceIdSchema } from "../validation/workspace.validation";
+import { projectIdSchema, workspaceIdSchema } from "../validation/workspace.validation";
 import { getMemberRoleInWorkspace } from "../services/member.service";
 import roleGuard from "../utils/roleGuard";
 import { Permissions } from "../enums/role.enum";
-import { createProjectByWorkspaceIdService, getAllProjectInWorkspaceService } from "../services/project.service";
+import { createProjectByWorkspaceIdService, getAllProjectInWorkspaceService, updateProjectByIdService } from "../services/project.service";
 import { HTTPSTATUS } from "../config/http.config";
 
 export const createProjectByWorkspaceIdController = asyncHandler(async(req: Request, res: Response) => {
@@ -43,11 +43,27 @@ export const getAllProjectInWorkspaceController = asyncHandler(async(req: Reques
 });
 
 export const updateProjectInWorkspaceController = asyncHandler(async(req: Request, res: Response) => {
-  const workspaceId = workspaceIdSchema.parse(req.params.id);
+  const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
+  const projectId = projectIdSchema.parse(req.params.projectId);
 
   const { emoji, name, description } = updateProjectSchema.parse(req.body);
   const userId = req.user?._id;
 
-  
 
+  const { role } = await getMemberRoleInWorkspace(userId, workspaceId); 
+  roleGuard(role, [Permissions.EDIT_PROJECT]);
+
+  const { project } = await updateProjectByIdService(
+    projectId,
+    workspaceId,
+    emoji,
+    name,
+    description,
+    userId,
+  );
+
+  return res.status(HTTPSTATUS.OK).json({
+    message: "Project update successfully",
+    project,
+  })
 })
