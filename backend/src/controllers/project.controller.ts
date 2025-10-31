@@ -5,7 +5,7 @@ import { projectIdSchema, workspaceIdSchema } from "../validation/workspace.vali
 import { getMemberRoleInWorkspace } from "../services/member.service";
 import roleGuard from "../utils/roleGuard";
 import { Permissions } from "../enums/role.enum";
-import { createProjectByWorkspaceIdService, getAllProjectInWorkspaceService, updateProjectByIdService } from "../services/project.service";
+import { createProjectByWorkspaceIdService, getAllProjectInWorkspaceService, getProjectByIdAndWorkspaceService, updateProjectByIdService } from "../services/project.service";
 import { HTTPSTATUS } from "../config/http.config";
 
 export const createProjectByWorkspaceIdController = asyncHandler(async(req: Request, res: Response) => {
@@ -28,42 +28,77 @@ export const createProjectByWorkspaceIdController = asyncHandler(async(req: Requ
 export const getAllProjectInWorkspaceController = asyncHandler(async(req: Request, res: Response) =>{
  
   const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
-
   const userId = req.user?._id;
+  
   const { role } = await getMemberRoleInWorkspace(userId, workspaceId);
   roleGuard(role, [Permissions.VIEW_ONLY]);
 
+  const pageSize = parseInt(req.query.pageSize as string) || 10;
+  const pageNumber = parseInt(req.query.pageNumber as string) || 1;  
   
-  const { allProjects } = await getAllProjectInWorkspaceService(userId, workspaceId);
 
+  const { Projects, totalCount, totalPage, skip  } = await getAllProjectInWorkspaceService(
+    userId, 
+    workspaceId,
+    pageNumber,
+    pageSize,
+  );
+ 
   return res.status(HTTPSTATUS.OK).json({
     message: "All of project's workspace retrieved successfully",
-    allProjects,
+    Projects,
+    pagination: {
+      totalCount,
+      pageSize,
+      pageNumber,
+      totalPage,
+      skip,
+      limit: pageSize,
+    }
   })
 });
 
-export const updateProjectInWorkspaceController = asyncHandler(async(req: Request, res: Response) => {
+export const getProjectByIdAndWorkspaceIdController = asyncHandler(async(req: Request, res:Response) => {
+  const projectId = projectIdSchema.parse(req.params.id);
   const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
-  const projectId = projectIdSchema.parse(req.params.projectId);
-
-  const { emoji, name, description } = updateProjectSchema.parse(req.body);
   const userId = req.user?._id;
 
-
   const { role } = await getMemberRoleInWorkspace(userId, workspaceId); 
-  roleGuard(role, [Permissions.EDIT_PROJECT]);
+  roleGuard(role, [Permissions.VIEW_ONLY]);
 
-  const { project } = await updateProjectByIdService(
+  const { project } = await getProjectByIdAndWorkspaceService(
     projectId,
     workspaceId,
-    emoji,
-    name,
-    description,
-    userId,
-  );
+  )
 
-  return res.status(HTTPSTATUS.OK).json({
-    message: "Project update successfully",
+    return res.status(HTTPSTATUS.OK).json({
+    message: "Project retrieved  successfully",
     project,
   })
 })
+
+// export const updateProjectInWorkspaceController = asyncHandler(async(req: Request, res: Response) => {
+//   const workspaceId = workspaceIdSchema.parse(req.params.workspaceId);
+//   const projectId = projectIdSchema.parse(req.params.projectId);
+
+//   const { emoji, name, description } = updateProjectSchema.parse(req.body);
+//   const userId = req.user?._id;
+
+
+//   const { role } = await getMemberRoleInWorkspace(userId, workspaceId); 
+//   roleGuard(role, [Permissions.EDIT_PROJECT]);
+
+//   const { project } = await updateProjectByIdService(
+//     projectId,
+//     workspaceId,
+//     emoji,
+//     name,
+//     description,
+//     userId,
+//   );
+
+//   return res.status(HTTPSTATUS.OK).json({
+//     message: "Project update successfully",
+//     project,
+//   })
+// })

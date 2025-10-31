@@ -52,6 +52,8 @@ export const createProjectByWorkspaceIdService = async (
 export const getAllProjectInWorkspaceService = async(
   userId: string,
   workspaceId: string,
+  pageNumber: number,
+  pageSize: number,
 ) => {
   const user = await UserModel.findById(userId);
   if (!user) {
@@ -72,11 +74,26 @@ export const getAllProjectInWorkspaceService = async(
     throw new BadRequestException("You are not member of this workspace")
   } 
 
-  const allProjects = await ProjectModel.find({ workspace: workspaceId })
-    .exec();
+  // Find all project dengan pagination
+  const totalCount = await ProjectModel.countDocuments({
+    workspace: workspaceId
+  });
+
+  const skip = (pageNumber - 1) * pageSize;
+
+  const Projects = await ProjectModel.find({ workspace: workspaceId })
+    .skip(skip)
+    .limit(pageSize)
+    .populate("createdBy", "_id name profilePicture -password")
+    .sort({ createdAt: -1}).exec();
+
+  const totalPage = Math.ceil(totalCount / pageSize);
 
   return {
-    allProjects
+    Projects,
+    totalCount,
+    totalPage,
+    skip,
   };
 }
 
@@ -125,4 +142,23 @@ export const updateProjectByIdService = async (
     return {
       project
     }
+}
+
+export const getProjectByIdAndWorkspaceService = async (
+    projectId: string,
+    workspaceId: string,
+) => {
+
+  const project = await ProjectModel.findOne({
+    _id: projectId,
+    workspace: workspaceId,
+  }).select("_id emoji name description");
+
+  if (!project) {
+    throw new NotFoundException("Project not found");
+  }
+  
+  return {
+    project
+  }
 }
