@@ -167,11 +167,6 @@ export const getProjectAnalyticsService = async(
       $group: {
         _id: null,
         totalTasks: { $sum: 1 },
-        completedTasks: {
-          $sum: {
-            $cond: [{ $eq: ["$status", TaskStatusEnum.DONE] }, 1, 0]
-          }
-        },
         overDueTasks: {
           $sum: {
             $cond: [
@@ -183,6 +178,11 @@ export const getProjectAnalyticsService = async(
               },
               1, 0
             ]
+          }
+        },
+        completedTasks: {
+          $sum: {
+            $cond: [{ $eq: ["$status", TaskStatusEnum.DONE] }, 1, 0]
           }
         }
       }
@@ -201,8 +201,8 @@ export const getProjectAnalyticsService = async(
   // Handle case when no tasks found
   const result = analytics[0] || {
     totalTasks: 0,
-    overDueTasks: 0,
     completedTasks: 0,
+    overDueTasks: 0,
   };
 
   return { analytics: result };

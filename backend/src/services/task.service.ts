@@ -1,0 +1,68 @@
+import { TaskPriorityEnum, TaskStatusEnum } from "../enums/task.enum";
+import MemberModel from "../models/member.model";
+import ProjectModel from "../models/project.model";
+import TaskModel from "../models/task.model";
+import WorkspaceModel from "../models/workspace.model";
+import { BadRequestException, NotFoundException } from "../utils/appError";
+
+export const createTaskService = async(
+  workspaceId: string,
+  projectId: string,
+  userId: string,
+  body: {
+    title: string;
+    description?: string;
+    priority: string;
+    status: string;
+    assignedTo?: string | null;
+    dueDate?: string;
+  }
+) => {
+  try {
+    const { title, description, priority, status, assignedTo, dueDate } = body;
+
+    const workspace = await WorkspaceModel.findById(workspaceId);
+    if (!workspace) {
+      throw new NotFoundException("Workspace not found");
+    }
+
+    const project = await ProjectModel.findOne({
+      _id: projectId,
+      workspace: workspaceId
+    });
+
+    if (!project) {
+      throw new NotFoundException("Project not found in this workspace");
+    }
+
+    if (assignedTo) {
+      const isAssignedToIsUserMember = await MemberModel.exists({
+        userId: assignedTo,
+        workspaceId,
+      })
+
+      if (!isAssignedToIsUserMember) {
+        throw new Error("Assigned user is not a member of this workspace")
+      }
+    }
+
+    const task = new TaskModel({
+      title,
+      description,
+      priority: priority || TaskPriorityEnum.MEDIUM,
+      status: status || TaskStatusEnum.TODO,
+      assignedTo,
+      createdBy: userId,
+      workspace: workspaceId,
+      project: projectId,
+      dueDate,
+    });
+    
+    await task.save();
+    return {
+      task
+    }
+  } catch (error) {  
+    throw error;
+  }
+};
