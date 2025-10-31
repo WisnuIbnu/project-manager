@@ -1,5 +1,8 @@
+import mongoose from "mongoose";
+import { TaskStatusEnum } from "../enums/task.enum";
 import MemberModel from "../models/member.model";
 import ProjectModel from "../models/project.model";
+import TaskModel from "../models/task.model";
 import UserModel from "../models/user.model";
 import WorkspaceModel from "../models/workspace.model";
 import { BadRequestException, NotFoundException } from "../utils/appError";
@@ -100,48 +103,109 @@ export const getAllProjectInWorkspaceService = async(
 export const updateProjectByIdService = async (
     projectId: string,
     workspaceId: string,
-    emoji: string | undefined,
-    name: string,
-    description: string | undefined,
-    userId: string,
+    body: {
+      emoji?: string,
+      name: string,
+      description?: string,
+    }
 ) => {
-  const user = await UserModel.findById(userId);
-  if (!user) {
-    throw new NotFoundException("User not found");
-  }
+  const {emoji, name, description} = body;
 
   const workspace = await WorkspaceModel.findById(workspaceId);
   if (!workspace) {
     throw new NotFoundException("Workspace not found")
   }
 
-  const isAlreadyMember = await MemberModel.findOne({
-    userId: userId,
-    workspaceId: workspaceId
-  }).exec();
 
-  if (!isAlreadyMember) {
-    throw new BadRequestException("You are not member of this workspace")
-  } 
 
   const project = await ProjectModel.findOne({
     _id: projectId,
     workspace: workspaceId,
-    createdBy:  userId,
   });
 
   if (!project) {
     throw new NotFoundException("Project not found");
   }
+
     project.name = name || project.name;
     project.description = description || project.description;
-    project.emoji = emoji || project.emoji;
+    project.emoji = emoji|| project.emoji;
 
     await project.save()
 
     return {
       project
     }
+};
+
+export const getProjectAnalyticsService = async(
+  projectId: string,
+  workspaceId: string,
+) => {
+  const workspace = await WorkspaceModel.findById(workspaceId);
+  if (!workspace) {
+    throw new NotFoundException("Workspace not found");
+  }
+
+  const project = await ProjectModel.findById(projectId);
+  if (!project || project.workspace.toString() !== workspaceId.toString()) {
+    throw new NotFoundException("Project not found or does not belong to this workspace");
+  }
+
+  const currentDate = new Date();
+
+  const analytics = await TaskModel.aggregate([
+    // Stage 1: Filter tasks by workspace and project
+    {
+      $match: {
+        workspace: new mongoose.Types.ObjectId(workspaceId),
+        project: new mongoose.Types.ObjectId(projectId)
+      }
+    },
+    // Stage 2: Group and calculate all metrics in one query
+    {
+      $group: {
+        _id: null,
+        totalTasks: { $sum: 1 },
+        completedTasks: {
+          $sum: {
+            $cond: [{ $eq: ["$status", TaskStatusEnum.DONE] }, 1, 0]
+          }
+        },
+        overDueTasks: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $lt: ["$dueDate", currentDate] },
+                  { $ne: ["$status", TaskStatusEnum.DONE] }
+                ]
+              },
+              1, 0
+            ]
+          }
+        }
+      }
+    },
+    // Stage 3: Project to clean up output
+    {
+      $project: {
+        _id: 0,
+        totalTasks: 1,
+        completedTasks: 1,
+        overDueTasks: 1
+      }
+    }
+  ]);
+
+  // Handle case when no tasks found
+  const result = analytics[0] || {
+    totalTasks: 0,
+    overDueTasks: 0,
+    completedTasks: 0,
+  };
+
+  return { analytics: result };
 }
 
 export const getProjectByIdAndWorkspaceService = async (
@@ -161,4 +225,4 @@ export const getProjectByIdAndWorkspaceService = async (
   return {
     project
   }
-}
+};
