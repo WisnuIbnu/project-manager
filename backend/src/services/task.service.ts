@@ -114,43 +114,26 @@ export const updateTaskService = async(
 
 export const deleteTaskService = async(
   workspaceId: string,
-  projectId: string,
   taskId: string
 ) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const project = await ProjectModel.findOne({
-      _id: new mongoose.Types.ObjectId(projectId),
-      workspace: new mongoose.Types.ObjectId(workspaceId)
-    }).session(session);
 
-    if (!project) {
-      throw new NotFoundException("Project not found or does not belong to this workspace");
-    }
-
-    const task = await TaskModel.findOne({
+    const task = await TaskModel.findOneAndDelete({
       _id: new mongoose.Types.ObjectId(taskId),
       workspace: new mongoose.Types.ObjectId(workspaceId),
-      project: new mongoose.Types.ObjectId(projectId)
     }).session(session);
 
     if (!task) {
       throw new NotFoundException("Task not found or does not belong to this project");
     }
 
-    await task.deleteOne({ session });
     await session.commitTransaction();
     session.endSession();
 
-    return {
-      deletedTask: {
-        _id: task._id,
-        taskCode: task.taskCode,
-        title: task.title
-      }
-    };
+    return;
 
   } catch (error) {
     await session.abortTransaction();
@@ -219,7 +202,7 @@ export const getAllTaskservice = async(
   const totalPages = Math.ceil(totalCount / pageSize);
   
   return{
-    tasks,
+  tasks,
     pagination: {
       pageSize,
       pageNumber,
@@ -228,4 +211,58 @@ export const getAllTaskservice = async(
       skip,
     }
   }
-}
+};
+
+export const getTaskByIdService = async(
+  workspaceId: string,
+  projectId: string,
+  taskId: string
+) => {
+  try {
+    const project = await ProjectModel.findOne({
+      _id: new mongoose.Types.ObjectId(projectId),
+      workspace: new mongoose.Types.ObjectId(workspaceId)
+    });
+
+    if (!project) {
+      throw new NotFoundException("Project not found or does not belong to this workspace");
+    }
+
+    const task = await TaskModel.findOne({
+      _id: new mongoose.Types.ObjectId(taskId),
+      workspace: new mongoose.Types.ObjectId(workspaceId),
+      project: new mongoose.Types.ObjectId(projectId)
+    })
+    .populate("assignedTo", "_id name email    profilePicture -password")
+    .populate("project", "_id name emoji description")
+    .populate("workspace", "_id name")
+    .populate("createdBy", "_id name email profilePicture -password")
+    .lean();;
+
+    if (!task) {
+      throw new NotFoundException("Task not found or does not belong to this project");
+    }
+
+
+    return {
+      task: {
+        _id: task._id,
+        title: task.title,
+        description: task.description,
+        project: task.project,
+        workspace: task.workspace,
+        status: task.status,
+        priority: task.priority,
+        assignedTo: task.assignedTo,
+        dueDate: task.dueDate,
+        taskCode: task.taskCode,
+        createdBy: task.createdBy,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+      }
+    };
+
+  } catch (error) {
+    throw error;
+  }
+};
