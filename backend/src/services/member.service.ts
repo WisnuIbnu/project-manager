@@ -66,3 +66,10 @@ export const joinWorkspaceByInviteService = async (
     role: role.name
   }
 };
+
+export const removeMemberByMemberIdService = async(
+  workspaceId: string,
+  memberId: string,
+) => {
+
+}
