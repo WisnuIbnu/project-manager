@@ -3,6 +3,7 @@ backend/.env
 
 frontend/node_modules
 frontend/.env
+frontend/.gitignore
 
 # Logs
 frontend/logs
