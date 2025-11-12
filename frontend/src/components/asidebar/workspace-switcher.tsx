@@ -37,19 +37,21 @@ export function WorkspaceSwitcher() {
 
   const [activeWorkspace, setActiveWorkspace] = React.useState<WorkspaceType>();
 
-  const { data, isPending} = useQuery({
+  const { data, isPending } = useQuery({
     queryKey: ["userWorkspaces"],
     queryFn: getAllWorkspacesUserIsMemberQueryFn,
     staleTime: 1,
     refetchOnMount: true,
   });
 
-  const workspaces = data?.workspaces;
+  const workspaces = data?.workspace;
 
   React.useEffect(() => {
-    if(workspaces?.length){
-      const workspace = workspaceId ? workspaces.find((ws) => ws._id === workspaceId) : workspaces[0]
-      
+    if (workspaces?.length) {
+      const workspace = workspaceId
+        ? workspaces.find((ws) => ws._id === workspaceId)
+        : workspaces[0];
+
       if (workspace) {
         setActiveWorkspace(workspace);
         if (!workspaceId) navigate(`/workspace/${workspace._id}`);
@@ -90,15 +92,13 @@ export function WorkspaceSwitcher() {
                       <span className="truncate font-semibold">
                         {activeWorkspace?.name}
                       </span>
-                      <span className="truncate text-xs">
-                        Free
-                      </span>
+                      <span className="truncate text-xs">Free</span>
                     </div>
                   </>
                 ) : (
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className=" truncate font-semibold">
-                      No Workspace Selected
+                    <span className="truncate font-semibold">
+                      Tidak ada Workspace yang dipilih
                     </span>
                   </div>
                 )}
@@ -114,7 +114,8 @@ export function WorkspaceSwitcher() {
               <DropdownMenuLabel className="text-xs text-muted-foreground">
                 Workspaces
               </DropdownMenuLabel>
-              {isPending ? <Loader className="w-5 h-5 animate-spin" /> : null}
+              {isPending ? <Loader className=" w-5 h-5 animate-spin" /> : null}
+
               {workspaces?.map((workspace) => (
                 <DropdownMenuItem
                   key={workspace._id}
@@ -142,7 +143,7 @@ export function WorkspaceSwitcher() {
                   <Plus className="size-4" />
                 </div>
                 <div className="font-medium text-muted-foreground">
-                  Add workspace
+                  Tambah Workspace
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>

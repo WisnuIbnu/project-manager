@@ -2,6 +2,8 @@ import { Separator } from "@/components/ui/separator";
 import WorkspaceHeader from "@/components/workspace/common/workspace-header";
 import EditWorkspaceForm from "@/components/workspace/edit-workspace-form";
 import DeleteWorkspaceCard from "@/components/workspace/settings/delete-workspace-card";
+import { Permissions } from "@/constant";
+import withPermission from "@/hoc/with-permission";
 
 const Settings = () => {
   return (
@@ -11,7 +13,7 @@ const Settings = () => {
       <main>
         <div className="w-full max-w-3xl mx-auto py-3">
           <h2 className="text-[20px] leading-[30px] font-semibold mb-3">
-            Workspace settings
+            Pengaturan Workspace
           </h2>
 
           <div className="flex flex-col pt-0.5 px-0 ">
@@ -28,4 +30,9 @@ const Settings = () => {
   );
 };
 
-export default Settings;
+const SettingsWithPermission = withPermission(
+  Settings,
+  Permissions.MANAGE_WORKSPACE_SETTINGS
+);
+
+export default SettingsWithPermission;

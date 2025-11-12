@@ -37,6 +37,22 @@ export type UserType = {
   };
 };
 
+export type UpdateNameResponse = {
+  message: string;
+  user: UserType;
+};
+
+export type UpdatePasswordResponse = {
+  message: string;
+  user: UserType;
+};
+
+export type ProfileForm = {
+  name: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
 export type CurrentUserResponseType = {
   message: string;
   user: UserType;
@@ -71,8 +87,8 @@ export type CreateWorkspaceResponseType = {
 };
 
 export type AllWorkspaceResponseType = {
+  workspace: WorkspaceType[];
   message: string;
-  workspaces: WorkspaceType[];
 };
 
 export type WorkspaceWithMembersType = WorkspaceType & {
@@ -199,9 +215,9 @@ export type AllProjectPayloadType = {
 };
 
 export type AllProjectResponseType = {
-  message: string;
-  projects: ProjectType[];
+  Projects: ProjectType[];
   pagination: PaginationType;
+  message: string;
 };
 
 // SINGLE PROJECT IN WORKSPACE TYPE
@@ -223,8 +239,27 @@ export type CreateTaskPayloadType = {
     status: TaskStatusEnumType;
     assignedTo: string;
     dueDate: string;
+    links?: string[];
   };
 };
+
+
+//added new for edtiting of task
+export type EditTaskPayloadType = {
+  taskId: string;
+  workspaceId: string;
+  projectId: string;
+  data: Partial<{
+    title: string;
+    description: string;
+    priority: TaskPriorityEnumType;
+    status: TaskStatusEnumType;
+    assignedTo: string;
+    dueDate: string;
+    links?: string[];
+  }>;
+};
+
 
 export type TaskType = {
   _id: string;
@@ -240,11 +275,18 @@ export type TaskType = {
   assignedTo: {
     _id: string;
     name: string;
+    email: string;
     profilePicture: string | null;
   } | null;
-  createdBy?: string;
+  createdBy?: {
+    _id: string;
+    name: string;
+    email: string;
+    profilePicture: string | null;
+  };
   dueDate: string;
   taskCode: string;
+  links: string[];
   createdAt?: string;
   updatedAt?: string;
 };

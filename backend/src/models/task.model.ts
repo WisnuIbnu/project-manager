@@ -14,6 +14,7 @@ export interface TaskDocument extends Document {
   assignedTo: mongoose.Types.ObjectId | null;
   createdBy: mongoose.Types.ObjectId;
   dueDate: Date | null;
+  links: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -68,6 +69,23 @@ const taskSchema = new Schema<TaskDocument>(
     dueDate: {
       type: Date,
       default: null,
+    },
+     links: {
+      type: [String],
+      default: [], 
+      validate: {
+        validator: function(links: string[]) {
+          return links.every(link => {
+            try {
+              new URL(link);
+              return true;
+            } catch {
+              return false;
+            }
+          });
+        },
+        message: 'Each link must be a valid URL'
+      }
     },
   }, 
   { timestamps: true }

@@ -19,9 +19,27 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useWorkspaceId from "@/hooks/use-workspace-id";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createProjectMutationFn } from "@/lib/api";
+import { toast } from "@/hooks/use-toast";
+import { Loader } from "lucide-react";
 
-export default function CreateProjectForm() {
+export default function CreateProjectForm({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const workspaceId = useWorkspaceId();
+
   const [emoji, setEmoji] = useState("📊");
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: createProjectMutationFn,
+  });
 
   const formSchema = z.object({
     name: z.string().trim().min(1, {
@@ -43,7 +61,38 @@ export default function CreateProjectForm() {
   };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    if (isPending) return;
+    const payload = {
+      workspaceId,
+      data: {
+        emoji,
+        ...values,
+      },
+    };
+    mutate(payload, {
+      onSuccess: (data) => {
+        const project = data.project;
+        queryClient.invalidateQueries({
+          queryKey: ["allprojects", workspaceId],
+        });
+
+        toast({
+          title: "Success",
+          description: "Project created successfully",
+          variant: "success",
+        });
+
+        navigate(`/workspace/${workspaceId}/project/${project._id}`);
+        setTimeout(() => onClose(), 500);
+      },
+      onError: (error) => {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
+    });
   };
 
   return (
@@ -54,17 +103,17 @@ export default function CreateProjectForm() {
             className="text-xl tracking-[-0.16px] dark:text-[#fcfdffef] font-semibold mb-1
            text-center sm:text-left"
           >
-            Create Project
+            Buat Proyek
           </h1>
           <p className="text-muted-foreground text-sm leading-tight">
-            Organize and manage tasks, resources, and team collaboration
+            Mengelola dan mengatur tugas, sumber daya, dan kolaborasi tim dalam satu proyek.
           </p>
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
-                Select Emoji
+                Pilih Emoji
               </label>
               <Popover>
                 <PopoverTrigger asChild>
@@ -87,7 +136,7 @@ export default function CreateProjectForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="dark:text-[#f1f7feb5] text-sm">
-                      Project title
+                      Nama Proyek
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -108,7 +157,7 @@ export default function CreateProjectForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="dark:text-[#f1f7feb5] text-sm">
-                      Project description
+                      Deskripsi Proyek
                       <span className="text-xs font-extralight ml-2">
                         Optional
                       </span>
@@ -127,10 +176,12 @@ export default function CreateProjectForm() {
             </div>
 
             <Button
+              disabled={isPending}
               className="flex place-self-end  h-[40px] text-white font-semibold"
               type="submit"
             >
-              Create
+              {isPending && <Loader className="animate-spin" />}
+              Simpan
             </Button>
           </form>
         </Form>

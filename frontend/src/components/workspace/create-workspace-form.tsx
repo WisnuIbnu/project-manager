@@ -13,8 +13,25 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "../ui/textarea";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createWorkspaceMutationFn } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
+import { Loader } from "lucide-react";
 
-export default function CreateWorkspaceForm() {
+export default function CreateWorkspaceForm({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
+  const navigate = useNavigate();
+
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: createWorkspaceMutationFn,
+  });
+
   const formSchema = z.object({
     name: z.string().trim().min(1, {
       message: "Workspace name is required",
@@ -31,7 +48,25 @@ export default function CreateWorkspaceForm() {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    if (isPending) return;
+    mutate(values, {
+      onSuccess: (data) => {
+        queryClient.resetQueries({
+          queryKey: ["userWorkspaces"],
+        });
+
+        const workspace = data.workspace;
+        onClose();
+        navigate(`/workspace/${workspace._id}`);
+      },
+      onError: (error) => {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
+    });
   };
 
   return (
@@ -45,8 +80,7 @@ export default function CreateWorkspaceForm() {
             Let's build a Workspace
           </h1>
           <p className="text-muted-foreground text-lg leading-tight">
-            Boost your productivity by making it easier for everyone to access
-            projects in one location.
+            Tingkatkan produktivitas Anda dengan memudahkan semua orang mengakses proyek di satu lokasi.
           </p>
         </div>
         <Form {...form}>
@@ -58,17 +92,17 @@ export default function CreateWorkspaceForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="dark:text-[#f1f7feb5] text-sm">
-                      Workspace name
+                      Nama Workspace
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Taco's Co."
+                        placeholder="Mata Pelajaran"
                         className="!h-[48px]"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      This is the name of your company, team or organization.
+                      Ini adalah nama perusahaan, tim, atau organisasi Anda.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -82,7 +116,7 @@ export default function CreateWorkspaceForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="dark:text-[#f1f7feb5] text-sm">
-                      Workspace description
+                      Deskripsi Workspace
                       <span className="text-xs font-extralight ml-2">
                         Optional
                       </span>
@@ -90,13 +124,13 @@ export default function CreateWorkspaceForm() {
                     <FormControl>
                       <Textarea
                         rows={6}
-                        placeholder="Our team organizes marketing projects and tasks here."
+                        placeholder="Tim kami mengorganisir proyek dan tugas di sini."
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      Get your members on board with a few words about your
-                      Workspace.
+                      Ajak anggota Anda bergabung dengan beberapa kata tentang
+                      Workspace Anda.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -105,10 +139,12 @@ export default function CreateWorkspaceForm() {
             </div>
 
             <Button
+              disabled={isPending}
               className="w-full h-[40px] text-white font-semibold"
               type="submit"
             >
-              Create Workspace
+              {isPending && <Loader className="animate-spin" />}
+              Buat Workspace
             </Button>
           </form>
         </Form>

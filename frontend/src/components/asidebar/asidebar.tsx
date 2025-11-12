@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { EllipsisIcon, Loader, LogOut } from "lucide-react";
+import { EllipsisIcon, Loader, LogOut, UserIcon } from "lucide-react";
 import {
   Sidebar,
   SidebarHeader,
@@ -17,12 +17,11 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Logo from "@/components/logo";
 import LogoutDialog from "./logout-dialog";
 import { WorkspaceSwitcher } from "./workspace-switcher";
@@ -30,14 +29,18 @@ import { NavMain } from "./nav-main";
 import { NavProjects } from "./nav-projects";
 import { Separator } from "../ui/separator";
 import useWorkspaceId from "@/hooks/use-workspace-id";
+import { useAuthContext } from "@/context/auth-provider";
+import ProfileModal from "./profile/ProfileModal";
+
 
 const Asidebar = () => {
+  const { isLoading, user } = useAuthContext();
+
   const { open } = useSidebar();
   const workspaceId = useWorkspaceId();
 
   const [isOpen, setIsOpen] = useState(false);
-
-  const isLoading = false;
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
     <>
@@ -50,7 +53,7 @@ const Asidebar = () => {
                 to={`/workspace/${workspaceId}`}
                 className="hidden md:flex ml-2 items-center gap-2 self-center font-medium"
               >
-                Team Sync.
+                SMKN 5 MALANG.
               </Link>
             )}
           </div>
@@ -82,17 +85,17 @@ const Asidebar = () => {
                       className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                     >
                       <Avatar className="h-8 w-8 rounded-full">
+                        <AvatarImage src={user?.profilePicture || ""} />
                         <AvatarFallback className="rounded-full border border-gray-500">
-                          CN
+                          {user?.name?.split(" ")?.[0]?.charAt(0)}
+                          {user?.name?.split(" ")?.[1]?.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-semibold">
-                          Chile Brown
+                          {user?.name}
                         </span>
-                        <span className="truncate text-xs">
-                          example@gmail.com
-                        </span>
+                        <span className="truncate text-xs">{user?.email}</span>
                       </div>
                       <EllipsisIcon className="ml-auto size-4" />
                     </SidebarMenuButton>
@@ -103,8 +106,12 @@ const Asidebar = () => {
                     align="start"
                     sideOffset={4}
                   >
-                    <DropdownMenuGroup></DropdownMenuGroup>
-                    <DropdownMenuSeparator />
+                    {/* Profile Menu Item - Opens Modal */}
+                    <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
+                      <UserIcon/>
+                      Profil
+                    </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setIsOpen(true)}>
                       <LogOut />
                       Log out
@@ -117,6 +124,9 @@ const Asidebar = () => {
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
+
+      {/* Profile Modal */}
+      <ProfileModal isOpen={isProfileOpen} setIsOpen={setIsProfileOpen} />
 
       <LogoutDialog isOpen={isOpen} setIsOpen={setIsOpen} />
     </>

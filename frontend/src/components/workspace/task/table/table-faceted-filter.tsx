@@ -57,7 +57,7 @@ export function DataTableFacetedFilter({
           disabled={disabled}
           variant="outline"
           size="sm"
-          className="h-8 border-dashed w-full lg:w-auto"
+          className="h-8 border-dashed w-auto flex items-center gap-1 px-2"
         >
           <PlusCircle />
           {title}

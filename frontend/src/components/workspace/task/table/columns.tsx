@@ -47,18 +47,32 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
       enableHiding: false,
     },
     {
-      accessorKey: "title",
+      accessorKey: "Judul",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Title" />
+        <DataTableColumnHeader column={column} title="Judul" />
       ),
       cell: ({ row }) => {
         return (
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap space-x-2">
             <Badge variant="outline" className="capitalize shrink-0 h-[25px]">
               {row.original.taskCode}
             </Badge>
             <span className="block lg:max-w-[220px] max-w-[200px] font-medium">
-              {row.original.title}
+              {(() => {
+                  const words = row.original.title?.split(' ') || [];
+                  if (words.length === 0) return 'Untitled';
+                  
+                  const firstWord = words[0];
+                  
+                  if (firstWord.length <= 2 && words.length > 1) {
+                    return words.slice(0, 2).join(' '); 
+                  }
+                  
+                  if (firstWord.length > 4) {
+                    return firstWord.substring(0, 4);
+                  }                  
+                  return firstWord; 
+                })()}
             </span>
           </div>
         );
@@ -70,7 +84,7 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
           {
             accessorKey: "project",
             header: ({ column }: { column: Column<TaskType, unknown> }) => (
-              <DataTableColumnHeader column={column} title="Project" />
+              <DataTableColumnHeader column={column} title="Proyek" />
             ),
             cell: ({ row }: { row: Row<TaskType> }) => {
               const project = row.original.project;
@@ -91,9 +105,9 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
           },
         ]),
     {
-      accessorKey: "assignedTo",
+      accessorKey: "Ditugaskan",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Assigned To" />
+        <DataTableColumnHeader column={column} title="Ditugaskan" />
       ),
       cell: ({ row }) => {
         const assignee = row.original.assignedTo || null;
@@ -112,7 +126,7 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
                 </AvatarFallback>
               </Avatar>
               <span className="block text-ellipsis w-[100px] truncate">
-                {assignee?.name}
+                {assignee?.name.split(" ")[0]}
               </span>
             </div>
           )
@@ -120,9 +134,9 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
       },
     },
     {
-      accessorKey: "dueDate",
+      accessorKey: "Tenggat Tugas",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Due Date" />
+        <DataTableColumnHeader column={column} title="Tenggat Tugas" />
       ),
       cell: ({ row }) => {
         return (
@@ -159,7 +173,7 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
           <div className="flex lg:w-[120px] items-center">
             <Badge
               variant={TaskStatusEnum[statusKey]}
-              className="flex w-auto p-1 px-2 gap-1 font-medium shadow-sm uppercase border-0"
+              className="flex w-auto p-2 px-2 gap-1 font-medium shadow-sm uppercase border-0"
             >
               <Icon className="h-4 w-4 rounded-full text-inherit" />
               <span>{status.label}</span>
@@ -171,7 +185,7 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
     {
       accessorKey: "priority",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Priority" />
+        <DataTableColumnHeader column={column} title="Level Tugas" />
       ),
       cell: ({ row }) => {
         const priority = priorities.find(
@@ -203,6 +217,34 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
           </div>
         );
       },
+    },
+    {
+      accessorKey: "createdBy",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Dibuat Oleh" />
+      ),
+      cell: ({ row }) => {
+        const createdBy = row.original.createdBy;
+        if (!createdBy) return <div>-</div>;
+        
+        const name = createdBy.name || "Unknown";
+        const initials = getAvatarFallbackText(name);
+        const avatarColor = getAvatarColor(name);
+
+        return (
+          <div className="flex items-center space-x-2">
+            <Avatar className="h-7 w-7">
+              <AvatarImage src={createdBy.profilePicture || ""} alt={name} />
+              <AvatarFallback className={avatarColor}>
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-sm">{name.split(" ")[0]}</span>
+          </div>
+        );
+      },
+      enableSorting: true,
+      enableHiding: true,
     },
     {
       id: "actions",

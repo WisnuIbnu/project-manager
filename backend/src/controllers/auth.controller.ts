@@ -6,19 +6,48 @@ import { HTTPSTATUS } from "../config/http.config";
 import { registerUserService } from "../services/auth.service";
 import passport from "passport";
 
+// Tambahkan controller ini
+export const googleRegisterCallBack = asyncHandler(async(req: Request, res:Response) => {
+  const currentWorkspace = req.user?.currentWorkspace;
 
+  if (!currentWorkspace) {
+    return res.redirect(
+      `${config.FRONTEND_GOOGLE_CALLBACK_URL}?status=failure&action=register`
+    )
+  }
+  
+  return res.redirect(
+    `${config.FRONTEND_ORIGIN}/workspace/${currentWorkspace}?action=register`
+  )
+});
+
+// Update googleLoginCallBack untuk handle action
 export const googleLoginCallBack = asyncHandler(async(req: Request, res:Response) => {
   const currentWorkspace = req.user?.currentWorkspace;
 
   if (!currentWorkspace) {
     return res.redirect(
-      `${config.FRONTEND_GOOGLE_CALLBACK_URL}?status=failure`
+      `${config.FRONTEND_GOOGLE_CALLBACK_URL}?status=failure&action=login`
     )
   }
+  
   return res.redirect(
-    `${config.FRONTEND_ORIGIN}/workspace/${currentWorkspace}`
+    `${config.FRONTEND_ORIGIN}/workspace/${currentWorkspace}?action=login`
   )
 });
+
+// export const googleLoginCallBack = asyncHandler(async(req: Request, res:Response) => {
+//   const currentWorkspace = req.user?.currentWorkspace;
+
+//   if (!currentWorkspace) {
+//     return res.redirect(
+//       `${config.FRONTEND_GOOGLE_CALLBACK_URL}?status=failure`
+//     )
+//   }
+//   return res.redirect(
+//     `${config.FRONTEND_ORIGIN}/workspace/${currentWorkspace}`
+//   )
+// });
 
 export const registerUserController = asyncHandler(
   async(req: Request, res: Response) => {

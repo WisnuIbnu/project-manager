@@ -17,10 +17,11 @@ export const createTaskService = async(
     status: string;
     assignedTo?: string | null;
     dueDate?: string;
+    links?: string[];
   }
 ) => {
   try {
-    const { title, description, priority, status, assignedTo, dueDate } = body;
+    const { title, description, priority, status, assignedTo, dueDate, links } = body;
 
     const workspace = await WorkspaceModel.findById(workspaceId);
     if (!workspace) {
@@ -57,6 +58,7 @@ export const createTaskService = async(
       workspace: workspaceId,
       project: projectId,
       dueDate,
+      links: links || [],
     });
     
     await task.save();
@@ -79,6 +81,7 @@ export const updateTaskService = async(
     status: string;
     assignedTo?: string | null;
     dueDate?: string;
+    links?: string[];
   }
 ) => {
 
@@ -101,6 +104,7 @@ export const updateTaskService = async(
     taskId,
     {
       ...body,
+      ...(body.links !== undefined && { links: body.links }),
     },
     {new: true}
   );
@@ -194,8 +198,9 @@ export const getAllTaskservice = async(
       .skip(skip)
       .limit(pageSize)
       .sort({ createdAt: -1})
-      .populate("assignedTo", "_id name profilePicture -password")
-      .populate("project", "_id emoji name"),
+      .populate("assignedTo", "_id name profilePicture email -password")
+      .populate("project", "_id emoji name")
+      .populate("createdBy", "_id name email -password"),
     TaskModel.countDocuments(query),
   ]);
 
@@ -257,6 +262,7 @@ export const getTaskByIdService = async(
         dueDate: task.dueDate,
         taskCode: task.taskCode,
         createdBy: task.createdBy,
+        links: task.links,
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,
       }

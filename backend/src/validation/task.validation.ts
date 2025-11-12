@@ -15,6 +15,8 @@ export const dueDateSchema = z
   });
 export const taskIdSchema = z.string().trim().min(1);
 
+export const linksSchema =  z.array(z.string().url("Each link must be a valid URL")).optional();
+
 export const prioritySchema = z.enum(
   Object.values(TaskPriorityEnum) as [string, ...string[]]
 );
@@ -30,6 +32,7 @@ export const createTaskSchema = z.object({
   status: statusSchema,
   assignedTo: assignedToSchema,
   dueDate: dueDateSchema,
+  links: linksSchema,
 });
 
 export const updateTaskSchema = z.object({
@@ -39,4 +42,5 @@ export const updateTaskSchema = z.object({
   status: statusSchema,
   assignedTo: assignedToSchema,
   dueDate: dueDateSchema,
+  links: linksSchema,
 });

@@ -52,12 +52,15 @@ const userSchema = new Schema<UserDocument>(
 );
 
 userSchema.pre("save", async function(next){
-  if(!this.isModified("password")){ 
-    if(this.password){
+  try {
+    // ✅ Hash password hanya jika field password diubah
+    if(this.isModified("password") && this.password){
       this.password = await hashValue(this.password);
     }
+    next();
+  } catch (error: any) {
+    next(error);
   }
-  next();
 });
 
 userSchema.methods.omitPassword = function(): Omit<UserDocument, "password"> {

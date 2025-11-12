@@ -15,6 +15,7 @@ const WorkspaceDashboard = () => {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">
             Workspace Overview
+
           </h2>
           <p className="text-muted-foreground">
             Here&apos;s an overview for this workspace!
@@ -22,7 +23,7 @@ const WorkspaceDashboard = () => {
         </div>
         <Button onClick={onOpen}>
           <Plus />
-          New Project
+          Proyek Baru
         </Button>
       </div>
       <WorkspaceAnalytics />
@@ -30,13 +31,13 @@ const WorkspaceDashboard = () => {
         <Tabs defaultValue="projects" className="w-full border rounded-lg p-2">
           <TabsList className="w-full justify-start border-0 bg-gray-50 px-1 h-12">
             <TabsTrigger className="py-2" value="projects">
-              Recent Projects
+              Proyek Terbaru
             </TabsTrigger>
             <TabsTrigger className="py-2" value="tasks">
-              Recent Tasks
+              Tugas Terbaru
             </TabsTrigger>
             <TabsTrigger className="py-2" value="members">
-              Recent Members
+              Member Terbaru
             </TabsTrigger>
           </TabsList>
           <TabsContent value="projects">
