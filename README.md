@@ -74,7 +74,7 @@ Fitur mencakup **Authentication**, **User Profile**, **Workspace**, **Projects**
 ---
 
 ## DB Structure
-![db structure](frontend/public/images/mongoDB.png?raw=true)
+![db structure](https://github.com/WisnuIbnu/project-manager/blob/main/frontend/public/images/mongoDB.png?raw=true)
 
 
 ---
