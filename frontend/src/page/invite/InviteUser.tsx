@@ -60,17 +60,17 @@ const InviteUser = () => {
           className="flex items-center gap-2 self-center font-medium"
         >
           <Logo />
-          Team Sync.
+          SMKN 5 MALANA.
         </Link>
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="text-xl">
-                Hey there! You're invited to join a TeamSync Workspace!
+                Hai! Anda diundang untuk bergabung dengan SMKN 5 MALANG!
               </CardTitle>
               <CardDescription>
-                Looks like you need to be logged into your TeamSync account to
-                join this Workspace.
+                  Sepertinya Kamu perlu masuk ke akun SMKN 5 Malang Kamu untuk
+                  bergabung dengan Workspace ini.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -89,7 +89,7 @@ const InviteUser = () => {
                           {isLoading && (
                             <Loader className="!w-6 !h-6 animate-spin" />
                           )}
-                          Join the Workspace
+                          Gabung Sekarang!
                         </Button>
                       </form>
                     </div>
@@ -99,7 +99,7 @@ const InviteUser = () => {
                         className="flex-1 w-full text-base"
                         to={`/sign-up?returnUrl=${returnUrl}`}
                       >
-                        <Button className="w-full">Signup</Button>
+                        <Button className="w-full">Daftar</Button>
                       </Link>
                       <Link
                         className="flex-1 w-full text-base"

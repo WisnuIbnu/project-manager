@@ -81,7 +81,6 @@ export default function CreateTaskForm(props: {
     };
   });
 
-  // Workspace Members
   const membersOptions = members?.map((member) => {
     const name = member.userId?.name || "Unknown";
     const initials = getAvatarFallbackText(name);
@@ -413,7 +412,7 @@ export default function CreateTaskForm(props: {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="font-medium text-muted-foreground text-xs mb-2 block">
-                        Tugaskan Tugas
+                        Tugas untuk
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}

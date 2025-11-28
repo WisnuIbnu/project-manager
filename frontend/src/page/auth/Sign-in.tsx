@@ -65,7 +65,7 @@ const SignIn = () => {
       onError: (error) => {
         toast({
           title: "Error",
-          description: error.message,
+          description: "Invalid Email or Password",
           variant: "destructive",
         });
       },
@@ -166,12 +166,12 @@ const SignIn = () => {
                     </div>
                     <div className="text-center text-sm">
                       Belum punya akun?{" "}
-                      <Link
+                      {/* <Link
                         to="/sign-up"
                         className="underline underline-offset-4"
                       >
                         daftar
-                      </Link>
+                      </Link> */}
                     </div>
                   </div>
                 </form>
