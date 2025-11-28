@@ -74,7 +74,8 @@ Fitur mencakup **Authentication**, **User Profile**, **Workspace**, **Projects**
 ---
 
 ## DB Structure
-![db structure](https://github.com/WisnuIbnu/project-manager/frontend/public/images/mongoDB.png?raw=true)
+![db structure](https://github.com/WisnuIbnu/project-manager/main/frontend/public/images/mongoDB.png?raw=true)
+
 
 ---
 
@@ -128,19 +129,3 @@ export const Permissions = {
 ```
 
 ---
-
-
-## 🛡️ Authorization
-
-Axios instance harus sudah menambahkan Bearer Token:
-
-```ts
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-```
-
----
-
