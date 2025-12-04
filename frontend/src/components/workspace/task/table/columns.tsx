@@ -1,13 +1,11 @@
 import { Column, ColumnDef, Row } from "@tanstack/react-table";
 import { format } from "date-fns";
-
+import { TableActionStatus } from "@/components/table/table-action-status"; 
 import { DataTableColumnHeader } from "./table-column-header";
 import { DataTableRowActions } from "./table-row-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
-  TaskPriorityEnum,
-  TaskPriorityEnumType,
   TaskStatusEnum,
   TaskStatusEnumType,
 } from "@/constant";
@@ -16,11 +14,24 @@ import {
   getAvatarColor,
   getAvatarFallbackText,
 } from "@/lib/helper";
-import { priorities, statuses } from "./data";
+import { statuses } from "./data";
 import { TaskType } from "@/types/api.type";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import useWorkspaceId from "@/hooks/use-workspace-id";
 
 export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
+
+   const WorkspaceIdWrapper = ({ task }: { task: TaskType }) => {
+    const workspaceId = useWorkspaceId();
+    return (
+      <TableActionStatus 
+        task={task} 
+        workspaceId={workspaceId} 
+        projectId={projectId} 
+      />
+    );
+  };
+
   const columns: ColumnDef<TaskType>[] = [
     {
       id: "_id",
@@ -54,9 +65,6 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
       cell: ({ row }) => {
         return (
           <div className="flex flex-wrap space-x-2">
-            <Badge variant="outline" className="capitalize shrink-0 h-[25px]">
-              {row.original.taskCode}
-            </Badge>
             <span className="block lg:max-w-[220px] max-w-[200px] font-medium">
               {(() => {
                   const words = row.original.title?.split(' ') || [];
@@ -156,63 +164,30 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
           (status) => status.value === row.getValue("status")
         );
 
-        if (!status) {
-          return null;
-        }
+        if (!status) return null;
 
         const statusKey = formatStatusToEnum(
           status.value
         ) as TaskStatusEnumType;
         const Icon = status.icon;
 
-        if (!Icon) {
-          return null;
-        }
+        if (!Icon) return null;
+
+        // 🔥 Mapping label status baru
+        const labelMap: Record<TaskStatusEnumType, string> = {
+          DONE: "SUDAH DIAJARKAN",
+          TODO: "BELUM DIAJARKAN",
+          IN_PROGRESS: "SEDANG DIAJARKAN",
+        };
 
         return (
-          <div className="flex lg:w-[120px] items-center">
+          <div className="flex lg:w-[160px] items-center">
             <Badge
               variant={TaskStatusEnum[statusKey]}
-              className="flex w-auto p-2 px-2 gap-1 font-medium shadow-sm uppercase border-0"
+              className="flex w-auto px-2 gap-1 font-medium shadow-sm uppercase border-0"
             >
               <Icon className="h-4 w-4 rounded-full text-inherit" />
-              <span>{status.label}</span>
-            </Badge>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "priority",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Level Tugas" />
-      ),
-      cell: ({ row }) => {
-        const priority = priorities.find(
-          (priority) => priority.value === row.getValue("priority")
-        );
-
-        if (!priority) {
-          return null;
-        }
-
-        const statusKey = formatStatusToEnum(
-          priority.value
-        ) as TaskPriorityEnumType;
-        const Icon = priority.icon;
-
-        if (!Icon) {
-          return null;
-        }
-
-        return (
-          <div className="flex items-center">
-            <Badge
-              variant={TaskPriorityEnum[statusKey]}
-              className="flex lg:w-[110px] p-1 gap-1 !bg-transparent font-medium !shadow-none uppercase border-0"
-            >
-              <Icon className="h-4 w-4 rounded-full text-inherit" />
-              <span>{priority.label}</span>
+              <span>{labelMap[statusKey]}</span>
             </Badge>
           </div>
         );
@@ -246,6 +221,20 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
       enableSorting: true,
       enableHiding: true,
     },
+
+     {
+      id: "actionStatus",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Action" />
+      ),
+      cell: ({ row }) => {
+        return <WorkspaceIdWrapper task={row.original} />;
+      },
+      enableSorting: false,
+      enableHiding: false,
+      size: 120,
+    },
+
     {
       id: "actions",
       cell: ({ row }) => {
