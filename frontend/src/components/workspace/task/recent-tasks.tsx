@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { TaskPriorityEnum, TaskStatusEnum } from "@/constant";
+import { TaskStatusEnum } from "@/constant";
 import useWorkspaceId from "@/hooks/use-workspace-id";
 import { getAllTasksQueryFn } from "@/lib/api";
 import {
@@ -79,16 +79,6 @@ const RecentTasks = () => {
                   className="flex w-auto p-1 px-2 gap-1 font-medium shadow-sm uppercase border-0"
                 >
                   <span>{transformStatusEnum(task.status)}</span>
-                </Badge>
-              </div>
-
-              {/* Task Priority */}
-              <div className="text-sm ml-2">
-                <Badge
-                  variant={TaskPriorityEnum[task.priority]}
-                  className="flex w-auto p-1 px-2 gap-1 font-medium shadow-sm uppercase border-0"
-                >
-                  <span>{transformStatusEnum(task.priority)}</span>
                 </Badge>
               </div>
 

@@ -34,7 +34,7 @@ import {
   transformOptions,
 } from "@/lib/helper";
 import useWorkspaceId from "@/hooks/use-workspace-id";
-import { TaskPriorityEnum, TaskStatusEnum } from "@/constant";
+import { TaskStatusEnum } from "@/constant";
 import useGetProjectsInWorkspaceQuery from "@/hooks/api/use-get-projects";
 import useGetWorkspaceMembers from "@/hooks/api/use-get-workspace-members";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -117,12 +117,6 @@ export default function CreateTaskForm(props: {
         required_error: "Status is required",
       }
     ),
-    priority: z.enum(
-      Object.values(TaskPriorityEnum) as [keyof typeof TaskPriorityEnum],
-      {
-        required_error: "Priority is required",
-      }
-    ),
     assignedTo: z.string().trim().min(1, {
       message: "AssignedTo is required",
     }),
@@ -143,7 +137,6 @@ export default function CreateTaskForm(props: {
       description: "",
       projectId: projectId ? projectId : "",
       status: "TODO",
-      priority: "MEDIUM",
       links: [],
     },
   });
@@ -154,10 +147,8 @@ export default function CreateTaskForm(props: {
   });
 
   const taskStatusList = Object.values(TaskStatusEnum);
-  const taskPriorityList = Object.values(TaskPriorityEnum);
 
   const statusOptions = transformOptions(taskStatusList);
-  const priorityOptions = transformOptions(taskPriorityList);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     if (isPending) return;
@@ -366,39 +357,6 @@ export default function CreateTaskForm(props: {
                     )}
                   />
 
-                  {/* Priority */}
-                  <FormField
-                    control={form.control}
-                    name="priority"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-medium text-muted-foreground text-xs mb-2 block">
-                          Level Tugas
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="!h-[42px]">
-                              <SelectValue placeholder="Select priority" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {priorityOptions?.map((priority) => (
-                              <SelectItem
-                                key={priority.value}
-                                value={priority.value}
-                              >
-                                {priority.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
               </CardContent>
             </Card>

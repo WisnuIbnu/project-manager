@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { DataTableFacetedFilter } from "./table/table-faceted-filter";
-import { priorities, statuses } from "./table/data";
+import { statuses } from "./table/data";
 import useTaskTableFilter from "@/hooks/use-task-table-filter";
 import { useQuery } from "@tanstack/react-query";
 import useWorkspaceId from "@/hooks/use-workspace-id";
@@ -51,7 +51,6 @@ const TaskTable = () => {
       getAllTasksQueryFn({
         workspaceId,
         keyword: filters.keyword,
-        priority: filters.priority,
         status: filters.status,
         projectId: projectId || filters.projectId,
         assignedTo: filters.assigneeId,
@@ -178,16 +177,6 @@ const DataTableFilterToolbar: FC<DataTableFilterToolbarProps> = ({
         onFilterChange={(values) => handleFilterChange("status", values)}
       />
 
-      {/* Priority filter */}
-      <DataTableFacetedFilter
-        title="Level Tugas"
-        multiSelect={true}
-        options={priorities}
-        disabled={isLoading}
-        selectedValues={filters.priority?.split(",") || []}
-        onFilterChange={(values) => handleFilterChange("priority", values)}
-      />
-
       {/* Assigned To filter */}
       <DataTableFacetedFilter
         title="Ditugaskan"
@@ -220,7 +209,6 @@ const DataTableFilterToolbar: FC<DataTableFilterToolbarProps> = ({
             setFilters({
               keyword: null,
               status: null,
-              priority: null,
               projectId: null,
               assigneeId: null,
             })

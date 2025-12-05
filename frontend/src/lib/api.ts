@@ -242,7 +242,6 @@ export const getAllTasksQueryFn = async ({
   keyword,
   projectId,
   assignedTo,
-  priority,
   status,
   dueDate,
   pageNumber,
@@ -254,7 +253,6 @@ export const getAllTasksQueryFn = async ({
   if (keyword) queryParams.append("keyword", keyword);
   if (projectId) queryParams.append("projectId", projectId);
   if (assignedTo) queryParams.append("assignedTo", assignedTo);
-  if (priority) queryParams.append("priority", priority);
   if (status) queryParams.append("status", status);
   if (dueDate) queryParams.append("dueDate", dueDate);
   if (pageNumber) queryParams.append("pageNumber", pageNumber?.toString());

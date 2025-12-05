@@ -29,7 +29,7 @@ import { Textarea } from "../../ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import useWorkspaceId from "@/hooks/use-workspace-id";
-import { TaskPriorityEnum, TaskStatusEnum } from "@/constant";
+import { TaskStatusEnum } from "@/constant";
 import useGetWorkspaceMembers from "@/hooks/api/use-get-workspace-members";
 import { editTaskMutationFn } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -60,16 +60,11 @@ export default function EditTaskForm({ task, onClose }: { task: TaskType; onClos
     value: status,
   }));
 
-  const priorityOptions = Object.values(TaskPriorityEnum).map((priority) => ({
-    label: priority.charAt(0) + priority.slice(1).toLowerCase(),
-    value: priority,
-  }));
 
   const formSchema = z.object({
     title: z.string().trim().min(1, { message: "Title is required" }),
     description: z.string().trim(),
     status: z.enum(Object.values(TaskStatusEnum) as [keyof typeof TaskStatusEnum]),
-    priority: z.enum(Object.values(TaskPriorityEnum) as [keyof typeof TaskPriorityEnum]),
     assignedTo: z.string().trim().min(1, { message: "AssignedTo is required" }),
     dueDate: z.date({ required_error: "A due date is required." }),
     links: z.array(
@@ -85,7 +80,6 @@ export default function EditTaskForm({ task, onClose }: { task: TaskType; onClos
       title: task?.title ?? "",
       description: task?.description ?? "",
       status: task?.status ?? "TODO",
-      priority: task?.priority ?? "MEDIUM",
       assignedTo: task.assignedTo?._id ?? "",
       dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
       links: task?.links ? task.links.map(url => ({ url })) : [],
@@ -315,33 +309,6 @@ export default function EditTaskForm({ task, onClose }: { task: TaskType; onClos
                     )} 
                   />
 
-                  {/* Priority */}
-                  <FormField 
-                    control={form.control} 
-                    name="priority" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-medium text-muted-foreground text-xs mb-2 block">
-                          Level Tugas
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="!h-[42px]">
-                              <SelectValue placeholder="Select priority" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {priorityOptions.map((priority) => (
-                              <SelectItem key={priority.value} value={priority.value}>
-                                {priority.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} 
-                  />
                 </div>
               </CardContent>
             </Card>

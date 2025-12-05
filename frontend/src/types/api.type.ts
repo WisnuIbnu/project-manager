@@ -1,6 +1,5 @@
 import {
   PermissionType,
-  TaskPriorityEnumType,
   TaskStatusEnumType,
 } from "@/constant";
 
@@ -235,7 +234,6 @@ export type CreateTaskPayloadType = {
   data: {
     title: string;
     description: string;
-    priority: TaskPriorityEnumType;
     status: TaskStatusEnumType;
     assignedTo: string;
     dueDate: string;
@@ -252,7 +250,6 @@ export type EditTaskPayloadType = {
   data: Partial<{
     title: string;
     description: string;
-    priority: TaskPriorityEnumType;
     status: TaskStatusEnumType;
     assignedTo: string;
     dueDate: string;
@@ -270,7 +267,6 @@ export type TaskType = {
     emoji: string;
     name: string;
   };
-  priority: TaskPriorityEnumType;
   status: TaskStatusEnumType;
   assignedTo: {
     _id: string;
@@ -295,7 +291,6 @@ export type AllTaskPayloadType = {
   workspaceId: string;
   projectId?: string | null;
   keyword?: string | null;
-  priority?: TaskPriorityEnumType | null;
   status?: TaskStatusEnumType | null;
   assignedTo?: string | null;
   dueDate?: string | null;

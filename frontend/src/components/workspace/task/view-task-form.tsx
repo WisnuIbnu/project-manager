@@ -4,14 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TaskType } from "@/types/api.type";
-import { TaskPriorityEnum, TaskStatusEnum } from "@/constant";
+import { TaskStatusEnum } from "@/constant";
 import { 
   getAvatarColor, 
   getAvatarFallbackText, 
   formatStatusToEnum 
 } from "@/lib/helper";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { priorities, statuses } from "./table/data";
+import {  statuses } from "./table/data";
 
 interface ViewTaskFormProps {
   task: TaskType;
@@ -20,11 +20,8 @@ interface ViewTaskFormProps {
 
 export default function ViewTaskForm({ task, onClose }: ViewTaskFormProps) {
   // Find status and priority data from constants
-  const status = statuses.find(s => s.value === task.status);
-  const priority = priorities.find(p => p.value === task.priority);
-  
+  const status = statuses.find(s => s.value === task.status);  
   const StatusIcon = status?.icon;
-  const PriorityIcon = priority?.icon;
 
   // Format status display
   const getStatusDisplay = () => {
@@ -44,23 +41,6 @@ export default function ViewTaskForm({ task, onClose }: ViewTaskFormProps) {
     );
   };
 
-  // Format priority display
-  const getPriorityDisplay = () => {
-    if (!priority) return task.priority;
-    
-    const priorityEnum = formatStatusToEnum(priority.value) as keyof typeof TaskPriorityEnum;
-    const variant = TaskPriorityEnum[priorityEnum] || "outline";
-    
-    return (
-      <Badge
-        variant={variant}
-        className="flex w-auto p-1 gap-1 font-medium shadow-sm uppercase border-0"
-      >
-        {PriorityIcon && <PriorityIcon className="h-4 w-4 rounded-full text-inherit" />}
-        <span>{priority.label}</span>
-      </Badge>
-    );
-  };
 
   // Extract domain from URL
   const getDomainFromUrl = (url: string): string => {
@@ -229,14 +209,9 @@ export default function ViewTaskForm({ task, onClose }: ViewTaskFormProps) {
           <Card className="border shadow-sm">
             <CardContent className="p-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
                   <p className="font-medium text-muted-foreground text-xs mb-2">Status</p>
                   {getStatusDisplay()}
-                </div>
-                <div>
-                  <p className="font-medium text-muted-foreground text-xs mb-2">Level Tugas</p>
-                  {getPriorityDisplay()}
-                </div>
+                
               </div>
             </CardContent>
           </Card>

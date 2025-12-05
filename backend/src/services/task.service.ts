@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { TaskPriorityEnum, TaskStatusEnum } from "../enums/task.enum";
+import {  TaskStatusEnum } from "../enums/task.enum";
 import MemberModel from "../models/member.model";
 import ProjectModel from "../models/project.model";
 import TaskModel from "../models/task.model";
@@ -13,7 +13,6 @@ export const createTaskService = async(
   body: {
     title: string;
     description?: string;
-    priority: string;
     status: string;
     assignedTo?: string | null;
     dueDate?: string;
@@ -21,7 +20,7 @@ export const createTaskService = async(
   }
 ) => {
   try {
-    const { title, description, priority, status, assignedTo, dueDate, links } = body;
+    const { title, description, status, assignedTo, dueDate, links } = body;
 
     const workspace = await WorkspaceModel.findById(workspaceId);
     if (!workspace) {
@@ -51,7 +50,6 @@ export const createTaskService = async(
     const task = new TaskModel({
       title,
       description,
-      priority: priority || TaskPriorityEnum.MEDIUM,
       status: status || TaskStatusEnum.TODO,
       assignedTo,
       createdBy: userId,
@@ -77,7 +75,6 @@ export const updateTaskService = async(
   body: {
     title: string;
     description?: string;
-    priority: string;
     status: string;
     assignedTo?: string | null;
     dueDate?: string;
@@ -151,7 +148,6 @@ export const getAllTaskservice = async(
   filters: {
     projectId?: string,
     status?: string[],
-    priority?: string[],
     assignedTo?: string[],
     keyword?: string,
     dueDate?: string
@@ -171,10 +167,6 @@ export const getAllTaskservice = async(
 
   if (filters.status && filters.status?.length > 0) {
       query.status = { $in: filters.status}
-  }
-
-  if (filters.priority && filters.priority?.length > 0) {
-      query.priority = { $in: filters.priority }
   }
 
   if (filters.assignedTo && filters.assignedTo?.length > 0) {
@@ -256,8 +248,6 @@ export const getTaskByIdService = async(
         description: task.description,
         project: task.project,
         workspace: task.workspace,
-        status: task.status,
-        priority: task.priority,
         assignedTo: task.assignedTo,
         dueDate: task.dueDate,
         taskCode: task.taskCode,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TaskPriorityEnum, TaskStatusEnum } from "../enums/task.enum";
+import { TaskStatusEnum } from "../enums/task.enum";
 
 export const titleSchema = z.string().trim().min(1).max(255);
 export const descriptionSchema = z.string().optional();
@@ -17,9 +17,6 @@ export const taskIdSchema = z.string().trim().min(1);
 
 export const linksSchema =  z.array(z.string().url("Each link must be a valid URL")).optional();
 
-export const prioritySchema = z.enum(
-  Object.values(TaskPriorityEnum) as [string, ...string[]]
-);
 
 export const statusSchema = z.enum(
   Object.values(TaskStatusEnum) as [string, ...string[]]
@@ -28,7 +25,6 @@ export const statusSchema = z.enum(
 export const createTaskSchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
-  priority: prioritySchema,
   status: statusSchema,
   assignedTo: assignedToSchema,
   dueDate: dueDateSchema,
@@ -38,7 +34,6 @@ export const createTaskSchema = z.object({
 export const updateTaskSchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
-  priority: prioritySchema,
   status: statusSchema,
   assignedTo: assignedToSchema,
   dueDate: dueDateSchema,
