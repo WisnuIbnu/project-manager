@@ -38,7 +38,6 @@ export const RolesPermissions: Record<RoleType, Array<PermissionsType>
   ],
   MEMBER: [
     Permissions.DELETE_TASK,
-    Permissions.CREATE_TASK,
     Permissions.EDIT_TASK,
     Permissions.VIEW_ONLY,
   ]
