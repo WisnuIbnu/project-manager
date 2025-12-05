@@ -52,7 +52,9 @@ const ProjectHeader = () => {
           <EditProjectDialog project={project} />
         </PermissionsGuard>
       </div>
-      <CreateTaskDialog projectId={projectId} />
+        <PermissionsGuard requiredPermission={Permissions.CREATE_TASK}>
+          <CreateTaskDialog projectId={projectId} />
+        </PermissionsGuard>
     </div>
   );
 };

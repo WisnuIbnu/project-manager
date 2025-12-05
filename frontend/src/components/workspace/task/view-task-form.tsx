@@ -33,7 +33,7 @@ export default function ViewTaskForm({ task, onClose }: ViewTaskFormProps) {
     return (
       <Badge
         variant={variant}
-        className="flex w-auto p-1 px-2 gap-1 font-medium shadow-sm uppercase border-0"
+        className="flex w-auto p-2 px-2 gap-1 font-medium shadow-sm uppercase border-0"
       >
         {StatusIcon && <StatusIcon className="h-4 w-4 rounded-full text-inherit" />}
         <span>{status.label}</span>
@@ -205,14 +205,11 @@ export default function ViewTaskForm({ task, onClose }: ViewTaskFormProps) {
             </Card>
           )}
 
-          {/* Status & Priority */}
+          {/* Status */}
           <Card className="border shadow-sm">
             <CardContent className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <p className="font-medium text-muted-foreground text-xs mb-2">Status</p>
-                  {getStatusDisplay()}
-                
-              </div>
+            <p className="font-medium text-muted-foreground text-xs mb-2">Status</p>
+            {getStatusDisplay()}
             </CardContent>
           </Card>
 

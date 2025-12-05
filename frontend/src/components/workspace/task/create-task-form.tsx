@@ -31,7 +31,6 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   getAvatarColor,
   getAvatarFallbackText,
-  transformOptions,
 } from "@/lib/helper";
 import useWorkspaceId from "@/hooks/use-workspace-id";
 import { TaskStatusEnum } from "@/constant";
@@ -148,8 +147,16 @@ export default function CreateTaskForm(props: {
 
   const taskStatusList = Object.values(TaskStatusEnum);
 
-  const statusOptions = transformOptions(taskStatusList);
+const statusLabelMap: Record<string, string> = {
+  TODO: "BELUM DIAJARKAN",
+  IN_PROGRESS: "SEDANG DIAJARKAN",
+  DONE: "SUDAH DIAJARKAN",
+};
 
+const statusOptions = taskStatusList.map((status) => ({
+  value: status,
+  label: statusLabelMap[status],
+}));
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     if (isPending) return;
     
@@ -187,7 +194,7 @@ export default function CreateTaskForm(props: {
       onError: (error) => {
         toast({
           title: "Error",
-          description: error.message,
+          description: "Member Tidak Dapat Membuat Tugas",
           variant: "destructive",
         });
       },
@@ -319,34 +326,28 @@ export default function CreateTaskForm(props: {
               </Card>
             )}
 
-            {/* Status & Priority Card */}
+            {/* Status  Card */}
             <Card className="border shadow-sm">
               <CardContent className="p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   {/* Status */}
-                  <FormField
-                    control={form.control}
-                    name="status"
+                  <FormField 
+                    control={form.control} 
+                    name="status" 
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="font-medium text-muted-foreground text-xs mb-2 block">
-                          Status Tugas
+                          Status
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="!h-[42px]">
-                              <SelectValue placeholder="Pilih status tugas" />
+                              <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {statusOptions?.map((status) => (
-                              <SelectItem
-                                key={status.value}
-                                value={status.value}
-                              >
+                            {statusOptions.map((status) => (
+                              <SelectItem key={status.value} value={status.value}>
                                 {status.label}
                               </SelectItem>
                             ))}
@@ -354,9 +355,8 @@ export default function CreateTaskForm(props: {
                         </Select>
                         <FormMessage />
                       </FormItem>
-                    )}
+                    )} 
                   />
-
                 </div>
               </CardContent>
             </Card>

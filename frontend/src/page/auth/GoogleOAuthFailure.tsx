@@ -22,7 +22,7 @@ const GoogleOAuthFailure = () => {
         <CardContent>
           <div style={{ textAlign: "center", marginTop: "50px" }}>
             <h1>Autentikasi Gagal</h1>
-            <p>Kamu tidak dapat login menggunakan akun google atau <br />anda belum terdaftar sebagar member. Silakan coba lagi.</p>
+            <p>Kamu tidak dapat login menggunakan akun google atau <br />Kamu belum terdaftar sebagar member. Silakan coba lagi.</p>
 
             <Button onClick={() => navigate("/")} style={{ marginTop: "20px" }}>
               Kembali

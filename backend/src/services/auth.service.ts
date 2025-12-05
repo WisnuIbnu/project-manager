@@ -9,7 +9,7 @@ import MemberModel from "../models/member.model";
 import { string } from "zod";
 import { ProviderEnum } from "../enums/account-provider";
 
-// Tambahkan function ini di auth.service.ts
+
 export const findUserByEmailService = async (email: string) => {
   return await UserModel.findOne({ email });
 };
@@ -102,76 +102,6 @@ export const loginOrCreateAccountService = async (data: {
     session.endSession();
   }
 };
-
-// export const loginOrCreateAccountService = async (data: {
-//   provider: string;
-//   displayName: string;
-//   providerId: string;
-//   picture?: string;
-//   email?: string;
-// }) => {
-//   const { providerId, provider, displayName, email, picture } = data;
-//   const session = await mongoose.startSession();
-
-//   try {
-//     session.startTransaction();
-//     console.log("Starated Sessioin..");
-
-//     let user = await UserModel.findOne({ email }).session(session);
-//     if (!user) {
-//       // Create New user if user doesnt exist
-//       user = new UserModel({
-//         email,
-//         name: displayName,
-//         profilePicture: picture || null,
-//       });
-//       await user.save({ session });
-
-//       const account = new AccountModel({
-//         userId: user._id,
-//         provider: provider,
-//         providerId: providerId,
-//       });
-//       await account.save({ session });
-
-//       const workspace = new WorkspaceModel({
-//         name: `My Workspace`,
-//         description: `Workspace created for ${user.name}`,
-//         owner: user._id
-//       });
-//       await workspace.save({ session });
-
-//       const ownerRole = await RoleModel.findOne({
-//         name: Roles.OWNER,
-//       }).session(session);
-
-//       if (!ownerRole) {
-//         throw new NotFoundException("Owner Role Not Found");
-//       }
-
-//       const member = new MemberModel({
-//         userId: user._id,
-//         workspaceId: workspace._id,
-//         role: ownerRole._id,
-//         joinedAt: new Date(),
-//       });
-//       await member.save({ session }); 
-
-//       user.currentWorkspace = workspace._id as mongoose.Types.ObjectId;
-//       await user.save({ session });
-//     }
-//       await session.commitTransaction();
-//       console.log("End Session..");
-
-//       return { user };
-//   } catch (error) {
-//     await session.abortTransaction();
-//     session.endSession();
-//     throw error; 
-//   } finally {
-//     session.endSession();
-//   }
-// };
 
 export const registerUserService = async ( body: {
   email: string;

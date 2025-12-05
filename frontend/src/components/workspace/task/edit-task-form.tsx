@@ -54,12 +54,16 @@ export default function EditTaskForm({ task, onClose }: { task: TaskType; onClos
     value: member.userId?._id || "",
   }));
 
-  // Status & Priority Options
+  const statusLabelMap: Record<string, string> = {
+    TODO: "BELUM DIAJARKAN",
+    IN_PROGRESS: "SEDANG DIAJARKAN",
+    DONE: "SUDAH DIAJARKAN",
+  };
+
   const statusOptions = Object.values(TaskStatusEnum).map((status) => ({
-    label: status.charAt(0) + status.slice(1).toLowerCase(),
+    label: statusLabelMap[status],
     value: status,
   }));
-
 
   const formSchema = z.object({
     title: z.string().trim().min(1, { message: "Title is required" }),
@@ -208,79 +212,10 @@ export default function EditTaskForm({ task, onClose }: { task: TaskType; onClos
               </CardContent>
             </Card>
 
-            {/* Links Section Card */}
+            {/* Status  Card */}
             <Card className="border shadow-sm">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                  <FormLabel className="font-medium text-muted-foreground text-xs">
-                    Dokumen Tugas
-                    <span className="text-xs font-normal text-muted-foreground ml-2">
-                    (Google Docs, Canva, Figma, etc.) Optional 
-                    </span>
-                  </FormLabel>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addLinkField}
-                    className="ml-auto flex items-center gap-1 h-7 text-xs"
-                  >
-                    <Plus className="w-3 h-3" />
-                    Add Link
-                  </Button>
-                </div>
-
-                <div className="space-y-2">
-                  {fields.map((field, index) => (
-                    <div
-                      key={field.id}
-                      className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg border"
-                    >
-                      <FormField
-                        control={form.control}
-                        name={`links.${index}.url`}
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormControl>
-                              <Input
-                                placeholder="https://docs.google.com/document/d/..."
-                                className="!h-[38px] text-sm bg-background"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeLinkField(index)}
-                        className="h-[38px] w-[38px] shrink-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-
-                  {fields.length === 0 && (
-                    <div className="text-center py-6 border-2 border-dashed rounded-lg bg-muted/20">
-                      <LinkIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-muted-foreground text-sm">
-                        Tidak ada link yang ditambahkan. Klik "Add Link" untuk menambahkan dokumen terkait.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Status & Priority Card */}
-            <Card className="border shadow-sm">
-              <CardContent className="p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   {/* Status */}
                   <FormField 
                     control={form.control} 
@@ -308,7 +243,6 @@ export default function EditTaskForm({ task, onClose }: { task: TaskType; onClos
                       </FormItem>
                     )} 
                   />
-
                 </div>
               </CardContent>
             </Card>
@@ -396,6 +330,75 @@ export default function EditTaskForm({ task, onClose }: { task: TaskType; onClos
                     </FormItem>
                   )} 
                 />
+              </CardContent>
+            </Card>
+
+            {/* Links Section Card */}
+            <Card className="border shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <LinkIcon className="h-4 w-4 text-muted-foreground" />
+                  <FormLabel className="font-medium text-muted-foreground text-xs">
+                    Dokumen Tugas
+                    <span className="text-xs font-normal text-muted-foreground ml-2">
+                    (Google Docs, Canva, Figma, etc.) Optional 
+                    </span>
+                  </FormLabel>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addLinkField}
+                    className="ml-auto flex items-center gap-1 h-7 text-xs"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Add Link
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg border"
+                    >
+                      <FormField
+                        control={form.control}
+                        name={`links.${index}.url`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Input
+                                placeholder="https://docs.google.com/document/d/..."
+                                className="!h-[38px] text-sm bg-background"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removeLinkField(index)}
+                        className="h-[38px] w-[38px] shrink-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+
+                  {fields.length === 0 && (
+                    <div className="text-center py-6 border-2 border-dashed rounded-lg bg-muted/20">
+                      <LinkIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground text-sm">
+                        Tidak ada link yang ditambahkan. Klik "Add Link" untuk menambahkan dokumen terkait.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 

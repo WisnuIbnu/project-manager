@@ -19,6 +19,8 @@ import { deleteTaskMutationFn } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import EditTaskDialog from "../edit-task-dialog";
 import ViewTaskDialog from "../view-task-dialog"; // Import the View Dialog
+import { useAuthContext } from "@/context/auth-provider";
+import { Permissions } from "@/constant";
 
 interface DataTableRowActionsProps {
   row: Row<TaskType>;
@@ -31,6 +33,12 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   const queryClient = useQueryClient();
   const workspaceId = useWorkspaceId();
+
+  const { hasPermission } = useAuthContext();
+
+  const canDeletedTask = hasPermission(
+    Permissions.DELETE_TASK
+  );
 
   const { mutate, isPending } = useMutation({
     mutationFn: deleteTaskMutationFn,
@@ -50,7 +58,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           setTimeout(() => setOpenDialog(false), 100);
         },
         onError: (error) => {
-          toast({ title: "Error", description: error.message, variant: "destructive" });
+          toast({ title: "Error", description: "Member Tidak dapat Menghapus Tugas", variant: "destructive" });
         },
       }
     );
@@ -77,15 +85,18 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
-
           {/* Delete Task Option */}
-          <DropdownMenuItem
-            className="!text-destructive cursor-pointer"
-            onClick={() => setOpenDialog(true)}
-          >
-            <Trash2 className="w-4 h-4 mr-2" /> Hapus Tugas
-            <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-          </DropdownMenuItem>
+            {
+              canDeletedTask ? (
+                <DropdownMenuItem
+                  className="!text-destructive cursor-pointer"
+                  onClick={() => setOpenDialog(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" /> Hapus Tugas
+                  <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              ) : null
+            }
         </DropdownMenuContent>
       </DropdownMenu>
 

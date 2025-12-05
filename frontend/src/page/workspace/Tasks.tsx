@@ -21,10 +21,10 @@ export default function Tasks() {
           </p>
         </div>
         {
-          canCreateTask 
+          canCreateTask ? (
+            <CreateTaskDialog />
+          ) : null
         }
-
-        <CreateTaskDialog />
       </div>
       {/* {Task Table} */}
       <div>
