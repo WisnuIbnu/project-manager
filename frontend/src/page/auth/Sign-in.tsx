@@ -25,11 +25,14 @@ import { loginMutationFn } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { Loader } from "lucide-react";
 import GoogleOauthButtonLogin from "@/components/auth/google-oauth-button-login";
+import { useStore } from "@/store/store";
 
 const SignIn = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnUrl = searchParams.get("returnUrl");
+
+  const { setAccessToken } = useStore();
 
   const { mutate, isPending } = useMutation({
     mutationFn: loginMutationFn,
@@ -57,15 +60,16 @@ const SignIn = () => {
 
     mutate(values, {
       onSuccess: (data) => {
+        const accessToken = data.access_token;
         const user = data.user;
-        console.log(user);
+        setAccessToken(accessToken);
         const decodedUrl = returnUrl ? decodeURIComponent(returnUrl) : null;
         navigate(decodedUrl || `/workspace/${user.currentWorkspace}`);
       },
       onError: (error) => {
         toast({
           title: "Error",
-          description: "Invalid Email or Password",
+          description: `Invalid Email or Password : ${error.message}`,
           variant: "destructive",
         });
       },

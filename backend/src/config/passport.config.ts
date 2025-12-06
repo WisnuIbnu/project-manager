@@ -2,16 +2,23 @@ import passport from "passport";
 import { Request } from "express";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-local";
+import {
+  Strategy as JwtStrategy,
+  ExtractJwt,
+  StrategyOptions,
+} from "passport-jwt";
 import { config } from "./app.config";
 import { NotFoundException, BadRequestException } from "../utils/appError";
 import { ProviderEnum } from "../enums/account-provider";
-import { 
-  loginOrCreateAccountService, 
+import {  
   verifyUserService,
-  findUserByEmailService
+  findUserByEmailService,
+  findUserByIdService,
+  CreateAccountService,
+  LoginAccountService
 } from "../services/auth.service";
-import AccountModel from "../models/account.model"; // Import AccountModel yang benar
-
+import AccountModel from "../models/account.model"; 
+import { signJwtToken } from "../utils/jwt";
 
 // Strategy untuk Google Register
 passport.use(
@@ -20,16 +27,14 @@ passport.use(
     {
       clientID: config.GOOGLE_CLIENT_ID,
       clientSecret: config.GOOGLE_CLIENT_SECRET,
-      // PERBAIKAN: Tambahkan /callback
       callbackURL: `${config.GOOGLE_CALLBACK_URL}/callback/register`,
       scope: ["profile", "email"],
       passReqToCallback: true,
     }, 
     async(req: Request, accessToken, refreshToken, profile, done) => {
-            try {
+      try {
         const {email, sub: googleId, picture} = profile._json;
         
-        // Validasi email dan googleId
         if (!email) {
           return done(new BadRequestException("Email is required"), false);
         }
@@ -45,14 +50,15 @@ passport.use(
         }
 
         // Buat user baru
-        const { user } = await loginOrCreateAccountService({
+        const { user } = await CreateAccountService({
           provider: ProviderEnum.GOOGLE,
           displayName: profile.displayName,
           providerId: googleId,
           picture: picture,
           email: email,
         });
-        
+        const jwt = signJwtToken({userId: user._id});
+        req.jwt = jwt;
         done(null, user);
       } catch (error) {
         done(error, false);
@@ -61,51 +67,56 @@ passport.use(
   )
 );
 
-// Strategy untuk Google Login
 passport.use( 
   'google-login',
   new GoogleStrategy(
     {
       clientID: config.GOOGLE_CLIENT_ID,
-      clientSecret: config.GOOGLE_CLIENT_SECRET,
-      // PERBAIKAN: Tambahkan /callback  
+      clientSecret: config.GOOGLE_CLIENT_SECRET,  
       callbackURL: `${config.GOOGLE_CALLBACK_URL}/callback/login`,
       scope: ["profile", "email"],
       passReqToCallback: true,
     }, 
     async(req: Request, accessToken, refreshToken, profile, done) => {
-        try {
+      try {
         const {email, sub: googleId, picture} = profile._json;
         
-        // Validasi email dan googleId
         if (!email) {
-          return done(new BadRequestException("Email is required"), false);
+          return done(null, false, { message: "Email is required" });
         }
         
         if (!googleId) {
-          return done(new NotFoundException('Google ID (sub) is Missing'), false);
+          return done(null, false, { message: 'Google ID (sub) is Missing' });
         }
 
-        // Cari user yang sudah ada
-        const existingUser = await findUserByEmailService(email);
-        if (!existingUser) {
-          return done(null, false, { message: "No account found with this email. Please register first." });
-        }
-
-        // Cek apakah user memiliki akun Google
-        // PERBAIKAN: Gunakan AccountModel, bukan UserModel
-        const googleAccount = await AccountModel.findOne({
-          userId: existingUser._id,
+        // Panggil LoginAccountService
+        const result = await LoginAccountService({
           provider: ProviderEnum.GOOGLE,
-          providerId: googleId
+          displayName: profile.displayName,
+          providerId: googleId,
+          picture: picture,
+          email: email,
         });
-
-        if (!googleAccount) {
-          return done(null, false, { message: "This email is registered with a different method. Please use your password to login." });
-        }
-
-        done(null, existingUser);
+        
+        const jwt = signJwtToken({userId: result.user._id});
+        req.jwt = jwt;
+        done(null, result.user);
       } catch (error) {
+        // Tangkap error dari service dan format untuk Passport.js
+        if (error instanceof Error) {
+          const message = error.message;
+          
+          // Ekstrak pesan user-friendly setelah titik dua
+          if (message.includes(':')) {
+            const userMessage = message.split(':')[1];
+            return done(null, false, { message: userMessage });
+          }
+          
+          // Jika format tidak sesuai, gunakan pesan asli
+          return done(null, false, { message });
+        }
+        
+        // Untuk error lainnya
         done(error, false);
       }
     }
@@ -115,7 +126,7 @@ passport.use(
 passport.use(new LocalStrategy({
   usernameField: "email",
   passwordField: "password",
-  session: true,
+  session: false,
   },
     async( email, password, done) =>{
       try {
@@ -128,125 +139,33 @@ passport.use(new LocalStrategy({
   )
 );
 
+interface JwtPayload {
+  userId : string;
+}
+
+const options: StrategyOptions = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: config.JWT_SECRET,
+  audience: ["user"],
+  algorithms: ["HS256"]
+};
+
+passport.use(
+  new JwtStrategy(options, async (payload: JwtPayload, done) => {
+    try {
+      const user = await findUserByIdService(payload.userId);
+      if (!user) {
+        return done(null, false);
+      }
+      return done(null, user);
+    } catch (error) {
+      return done(null, false);
+    }
+  })
+)
 passport.serializeUser((user: any, done) => done(null, user));
 passport.deserializeUser((user: any, done) => done(null, user));
 
-// import passport from "passport";
-// import { Request } from "express";
-// import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-// import { Strategy as LocalStrategy } from "passport-local";
-// import { config } from "./app.config";
-// import { NotFoundException } from "../utils/appError";
-// import { ProviderEnum } from "../enums/account-provider";
-// import { 
-//   loginOrCreateAccountService, 
-//   verifyUserService,
-//   findUserByEmailService
-// } from "../services/auth.service";
-// import UserModel from "../models/user.model";
-
-// // Strategy untuk Google Register
-// passport.use(
-//   'google-register',
-//   new GoogleStrategy(
-//     {
-//       clientID: config.GOOGLE_CLIENT_ID,
-//       clientSecret: config.GOOGLE_CLIENT_SECRET,
-//       callbackURL: `${config.GOOGLE_CALLBACK_URL}/register`, // Callback khusus register
-//       scope: ["profile", "email"],
-//       passReqToCallback: true,
-//     }, 
-//     async(req: Request, accessToken, refreshToken, profile, done) => {
-//       try {
-//         const {email, sub: googleId, picture} = profile._json;
-        
-//         if (!googleId) {
-//           throw new NotFoundException('Google ID (sub) is Missing');
-//         }
-
-//         // Cek apakah user sudah ada
-//         const existingUser = await findUserByEmailService(email);
-//         if (existingUser) {
-//           return done(null, false, { message: "Email already exists. Please login instead." });
-//         }
-
-//         // Buat user baru
-//         const { user } = await loginOrCreateAccountService({
-//           provider: ProviderEnum.GOOGLE,
-//           displayName: profile.displayName,
-//           providerId: googleId,
-//           picture: picture,
-//           email: email,
-//         });
-        
-//         done(null, user);
-//       } catch (error) {
-//         done(error, false);
-//       }
-//     }
-//   )
-// );
-
-// // Strategy untuk Google Login
-// passport.use(
-//   'google-login',
-//   new GoogleStrategy(
-//     {
-//       clientID: config.GOOGLE_CLIENT_ID,
-//       clientSecret: config.GOOGLE_CLIENT_SECRET,
-//       callbackURL: `${config.GOOGLE_CALLBACK_URL}/login`, // Callback khusus login
-//       scope: ["profile", "email"],
-//       passReqToCallback: true,
-//     }, 
-//     async(req: Request, accessToken, refreshToken, profile, done) => {
-//       try {
-//         const {email, sub: googleId, picture} = profile._json;
-        
-//         if (!googleId) {
-//           throw new NotFoundException('Google ID (sub) is Missing');
-//         }
-
-//         // Cari user yang sudah ada
-//         const existingUser = await findUserByEmailService(email);
-//         if (!existingUser) {
-//           return done(null, false, { message: "No account found with this email. Please register first." });
-//         }
-
-//         // Cek apakah user memiliki akun Google
-//         const googleAccount = await UserModel.findOne({
-//           userId: existingUser._id,
-//           provider: ProviderEnum.GOOGLE,
-//           providerId: googleId
-//         });
-
-//         if (!googleAccount) {
-//           return done(null, false, { message: "This email is registered with a different method. Please use your password to login." });
-//         }
-
-//         done(null, existingUser);
-//       } catch (error) {
-//         done(error, false);
-//       }
-//     }
-//   )
-// );
-
-// // Local strategy tetap sama
-// passport.use(new LocalStrategy({
-//   usernameField: "email",
-//   passwordField: "password",
-//   session: true,
-//   },
-//     async( email, password, done) =>{
-//       try {
-//          const user = await verifyUserService({ email, password});
-//          return done(null, user)
-//       } catch (error: any) {
-//         return done(error, false, { message: error?.message});
-//       }
-//     }
-//   )
-// );
-
-// passport.serializeUser((user: any, done) => done(null, user));
-// passport.deserializeUser((user: any, done) => done(null, user));
+export const passportAuthenticateJWT = passport.authenticate("jwt", {
+  session: false,
+})

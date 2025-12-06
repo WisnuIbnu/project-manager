@@ -5,34 +5,41 @@ import { registerSchema } from "../validation/auth.validation";
 import { HTTPSTATUS } from "../config/http.config";
 import { registerUserService } from "../services/auth.service";
 import passport from "passport";
+import { signJwtToken } from "../utils/jwt";
 
 // Tambahkan controller ini
 export const googleRegisterCallBack = asyncHandler(async(req: Request, res:Response) => {
+  const jwt = req.jwt;
   const currentWorkspace = req.user?.currentWorkspace;
 
-  if (!currentWorkspace) {
+  if (!jwt) {
     return res.redirect(
       `${config.FRONTEND_GOOGLE_CALLBACK_URL}?status=failure&action=register`
     )
-  }
-  
+  }  
+  // return res.redirect(
+  //   `${config.FRONTEND_ORIGIN}/workspace/${currentWorkspace}?action=register`
+  // )
   return res.redirect(
-    `${config.FRONTEND_ORIGIN}/workspace/${currentWorkspace}?action=register`
+    `${config.FRONTEND_GOOGLE_CALLBACK_URL}?status=success&access_token=${jwt}&current_workspace=${currentWorkspace}?action=register`
   )
 });
 
 // Update googleLoginCallBack untuk handle action
 export const googleLoginCallBack = asyncHandler(async(req: Request, res:Response) => {
+  const jwt = req.jwt;
   const currentWorkspace = req.user?.currentWorkspace;
 
-  if (!currentWorkspace) {
+  if (!jwt) {
     return res.redirect(
       `${config.FRONTEND_GOOGLE_CALLBACK_URL}?status=failure&action=login`
     )
   }
-  
+  // return res.redirect(
+  //   `${config.FRONTEND_ORIGIN}/workspace/${currentWorkspace}?action=login`
+  // )
   return res.redirect(
-    `${config.FRONTEND_ORIGIN}/workspace/${currentWorkspace}?action=login`
+    `${config.FRONTEND_GOOGLE_CALLBACK_URL}?status=success&access_token=${jwt}&current_workspace=${currentWorkspace}?action=login`
   )
 });
 
@@ -66,16 +73,13 @@ export const loginController = asyncHandler(async(req: Request, res: Response, n
           });
         }
 
-        req.logIn(user, (err)=>{
-          if (err) {
-            return next(err);
-          }
+        const access_token = signJwtToken({ userId: user._id})
 
-          return res.status(HTTPSTATUS.OK).json({
-            message: "Logged in Successfully",
-            user, 
-          })
-        })
+        return res.status(HTTPSTATUS.OK).json({
+          message: "Logged in successfully",
+          access_token,
+          user,
+        });
       }
     )(req, res, next);
   }

@@ -18,6 +18,7 @@ authRoutes.get(
   "/google/register",
   passport.authenticate("google-register", {
     scope: ["profile", "email"],
+    session: false,
   })
 );
 
@@ -26,6 +27,7 @@ authRoutes.get(
   "/google/login",
   passport.authenticate("google-login", {
     scope: ["profile", "email"],
+    session: false,
   })
 );
 
@@ -35,6 +37,7 @@ authRoutes.get(
   passport.authenticate("google-register", {
     failureRedirect: failedUrl,
     failureMessage: true,
+    session: false,
   }),
   googleRegisterCallBack
 );
@@ -43,7 +46,7 @@ authRoutes.get(
   "/google/callback/login",
   passport.authenticate("google-login", {
     failureRedirect: failedUrl,
-    failureMessage: true,
+    session: false,
   }),
   googleLoginCallBack
 );

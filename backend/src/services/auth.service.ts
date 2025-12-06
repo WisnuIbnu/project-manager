@@ -6,16 +6,21 @@ import RoleModel from "../models/roles-permission.model";
 import { Roles } from "../enums/role.enum";
 import { BadRequestException, NotFoundException, UnauthorizedException } from "../utils/appError";
 import MemberModel from "../models/member.model";
-import { string } from "zod";
 import { ProviderEnum } from "../enums/account-provider";
 
+
+export const findUserByIdService = async (userId : string) => {
+  const user = await UserModel.findById(userId, {
+    password: false,
+  })
+  return user || null;
+}
 
 export const findUserByEmailService = async (email: string) => {
   return await UserModel.findOne({ email });
 };
 
-// Update loginOrCreateAccountService untuk handle existing user differently
-export const loginOrCreateAccountService = async (data: {
+export const CreateAccountService = async (data: {
   provider: string;
   displayName: string;
   providerId: string;
@@ -100,6 +105,68 @@ export const loginOrCreateAccountService = async (data: {
     throw error; 
   } finally {
     session.endSession();
+  }
+};
+
+export const LoginAccountService = async (data: {
+  provider: string;
+  displayName: string;
+  providerId: string;
+  picture?: string;
+  email?: string;
+}) => {
+  const { providerId, provider, displayName, email, picture } = data;
+  
+  if (!email) {
+    throw new Error("Email is required for login");
+  }
+
+  const session = await mongoose.startSession();
+  
+  try {
+    await session.startTransaction();
+    console.log("Started Session..");
+
+    let user = await UserModel.findOne({ email }).session(session);
+    
+    if (!user) {
+      throw new Error("No account found with this email. Please register first.");
+    }
+
+    const existingAccount = await AccountModel.findOne({
+      userId: user._id,
+      provider: provider
+    }).session(session);
+
+    if (!existingAccount) {
+      throw new Error(`This email is registered but not with ${provider}. Please use the correct login method.`);
+    }
+
+    if (provider === ProviderEnum.GOOGLE) {
+      const googleAccount = await AccountModel.findOne({
+        userId: user._id,
+        provider: ProviderEnum.GOOGLE,
+        providerId: providerId
+      }).session(session);
+
+      if (!googleAccount) {
+        throw new Error("Google account mismatch. Please use the correct Google account.");
+      }
+    }
+
+    await session.commitTransaction();
+    
+    const result = { 
+      user,
+      account: existingAccount
+    };
+    
+    return result;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    await session.endSession();
   }
 };
 

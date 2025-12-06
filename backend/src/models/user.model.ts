@@ -53,7 +53,6 @@ const userSchema = new Schema<UserDocument>(
 
 userSchema.pre("save", async function(next){
   try {
-    // ✅ Hash password hanya jika field password diubah
     if(this.isModified("password") && this.password){
       this.password = await hashValue(this.password);
     }

@@ -50,7 +50,7 @@ export function NavProjects() {
   const { context, open, onOpenDialog, onCloseDialog } = useConfirmDialog();
 
   const [pageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(100);
 
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: deleteProjectMutationFn,
